@@ -1,11 +1,19 @@
 import sys
 import re
+from typing import List
 from pypdf import PdfReader
 
 def get_text(filename: str) -> str:
+    """
+    Get all of the text from the pdf.
+
+        Keyword arguments:
+        filename: the pdf to extract text from
+    
+    Return the full pdf text
+    """
     reader = PdfReader(filename)
 
-    # Get text from whole PDF
     text = ""
     for page in reader.pages:
         text += page.extract_text()
@@ -13,6 +21,13 @@ def get_text(filename: str) -> str:
     return text
 
 def check_overhead(line: str) -> bool:
+    """
+    Check if a line of text is overhead from the psych sheet or
+    part of an event entry.
+
+        Keyword:
+    """
+
     # Check if it's an event entry
     check1 = bool(re.search("en's", line))
 
@@ -21,7 +36,10 @@ def check_overhead(line: str) -> bool:
 
     return check1 or check2
 
-def delete_overhead(lines: list) -> list:
+def delete_overhead(lines: List[str]) -> List[str]:
+    """
+    Delete all lines
+    """
     filtered_lines = filter(check_overhead, lines)
 
     return list(filtered_lines)
