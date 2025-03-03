@@ -3,13 +3,14 @@ import re
 from typing import List
 from pypdf import PdfReader
 
+
 def get_text(filename: str) -> str:
     """
     Get all of the text from the pdf.
 
         Keyword arguments:
         filename: the pdf to extract text from
-    
+
     Return the full pdf text
     """
     reader = PdfReader(filename)
@@ -19,6 +20,7 @@ def get_text(filename: str) -> str:
         text += page.extract_text()
 
     return text
+
 
 def check_overhead(line: str) -> bool:
     """
@@ -36,6 +38,7 @@ def check_overhead(line: str) -> bool:
 
     return check1 or check2
 
+
 def delete_overhead(lines: List[str]) -> List[str]:
     """
     Delete all lines
@@ -44,16 +47,18 @@ def delete_overhead(lines: List[str]) -> List[str]:
 
     return list(filtered_lines)
 
+
 def main():
     filename = sys.argv[1]
 
     pdf_text = get_text(filename)
-    lines = pdf_text.split('\n')
+    lines = pdf_text.split("\n")
     cutoff = lines.index("Entry List by NAT")
     entry_lines = lines[cutoff:]
 
     stuff = delete_overhead(entry_lines)
     print(stuff)
+
 
 if __name__ == "__main__":
     main()
