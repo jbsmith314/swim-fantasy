@@ -13,6 +13,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from ortools.linear_solver import pywraplp
 
+SCHEDULE_URL = "https://www.worldaquatics.com/competitions/3433/world-aquatics-swimming-championships-25m-2024/schedule?phase=All"
+
 class Entry:
     """
     Holds all information for an entry in an event
@@ -194,8 +196,7 @@ class DataParser:
 
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-        url = "https://www.worldaquatics.com/competitions/3433/world-aquatics-swimming-championships-25m-2024/schedule?phase=All"
-        driver.get(url)
+        driver.get(SCHEDULE_URL)
 
         # Wait for the page to load fully
         time.sleep(5)  # Adjust this time if the page is taking longer to load
@@ -280,6 +281,7 @@ class DataParser:
         
         self.swimmers = swimmers
         return swimmers
+
 
 class IntegerProgram:
     def __init__(self):
