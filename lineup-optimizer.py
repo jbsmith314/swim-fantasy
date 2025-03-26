@@ -1,13 +1,15 @@
 import sys
 import re
-from typing import Dict, List, Tuple
+import math
+import time
 from pypdf import PdfReader
+from typing import Dict, List, Tuple
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-import time
 
 class Entry:
     """
@@ -20,7 +22,7 @@ class Entry:
         self.projected_points = None
     
     def __repr__(self) -> str:
-        return "Event: " + self.event + "Time: " + self.time + "Seed: " + self.seed + "Projected points: " + self.projected_points
+        return "Event: " + self.event + "\nTime: " + self.time + "\nSeed: " + self.seed + "\nProjected points: " + self.projected_points
 
     def __lt__(self, other):
         return self.time < other.time
@@ -36,7 +38,6 @@ class Swimmer:
         self.birthday = birthday
         self.height = height
         self.entries = {}
-        self.seeds = {}
         self.projected_points = [0] * num_days
     
     def __repr__(self) -> str:
@@ -62,9 +63,13 @@ class Swimmer:
                     seed += 1
             self.entries[event].seed = seed
     
-    def update_projected_points(self):
-        for entry in self.entries:
-            entry.projected_points = entry.time / entry.event
+    def update_projected_points(self, base_times: Dict, schedule: Dict):
+        for event, entry in self.entries.items():
+            entry.projected_points = math.floor((base_times[event] / entry.time) ** 3 * 1000)
+            for day in schedule:
+                events = [x[0] for x in schedule[day]]
+                if event in events:
+                    self.projected_points[day - 1] += entry.projected_points
 
 
 def get_text(filename: str) -> str:
@@ -196,9 +201,9 @@ def update_seeds(swimmers: List[Swimmer]):
         swimmer.update_seeds(swimmers)
 
 
-def update_projected_points(swimmers: List[Swimmer], base_times: Dict):
+def update_projected_points(swimmers: List[Swimmer], base_times: Dict, schedule: Dict):
     for swimmer in swimmers:
-        swimmer.update_projected_points(base_times)
+        swimmer.update_projected_points(base_times, schedule)
 
 
 def check_valid_input() -> bool:
@@ -294,7 +299,7 @@ def main():
     swimmers = get_swimmers(len(schedule))
 
     update_seeds(swimmers)
-    update_projected_points(swimmers, base_times)
+    update_projected_points(swimmers, base_times, schedule)
 
 
 if __name__ == "__main__":
