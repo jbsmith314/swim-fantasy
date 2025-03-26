@@ -134,8 +134,7 @@ class DataParser:
         return clean_lines
 
 
-    def get_entries(self):
-        filename = sys.argv[1]
+    def get_entries(self, filename):
         pdf_text = self.get_text(filename)
 
         lines = pdf_text.split("\n")
@@ -217,9 +216,8 @@ class DataParser:
         return corrected_event
 
 
-    def get_base_times(self) -> Dict:
-        filename = sys.argv[2]
-        lines = self.get_text(filename).split("\n")
+    def get_base_times(self, base_times_filename: str) -> Dict:
+        lines = self.get_text(base_times_filename).split("\n")
         filtered_lines = []
         for line in lines:
             if len(line) < 3:
@@ -235,6 +233,7 @@ class DataParser:
             men_event_name = self.format_event_name("Men's " + event)
             base_times[men_event_name] = float(line.split()[-3])
         
+        self.base_times = base_times
         return base_times
 
 
@@ -250,14 +249,16 @@ class DataParser:
                 if line.split()[0][-2:] == "en" and "Relay" not in line and lines[index + 1] != "Heats":
                     schedule[day].append((self.format_event_name(line), lines[index + 1]))
         
+        self.schedule = schedule
         return schedule
     
 
-    def get_swimmers(self, num_days: int) -> List[Swimmer]:
+    def get_swimmers(self, psych_sheet_filename: str) -> List[Swimmer]:
         """
         Get a list of swimmers and their events
         """
-        lines = self.get_entries()
+        num_days = len(self.schedule)
+        lines = self.get_entries(psych_sheet_filename)
         swimmers = []
         country = None
         for line in lines:
@@ -275,6 +276,7 @@ class DataParser:
                 new_swimmer.add_event(event)
                 swimmers.append(new_swimmer)
         
+        self.swimmers = swimmers
         return swimmers
 
 
@@ -304,12 +306,15 @@ def main():
     psych_sheet_filename = sys.argv[1]
     base_times_filename = sys.argv[2]
     parser = DataParser()
-    base_times = parser.get_base_times()
+    base_times = parser.get_base_times(base_times_filename)
     schedule = parser.get_schedule()
-    swimmers = parser.get_swimmers(len(schedule))
+    swimmers = parser.get_swimmers(psych_sheet_filename)
 
     parser.update_seeds(swimmers)
     parser.update_projected_points(swimmers, base_times, schedule)
+
+    for swimmer in swimmers:
+        print(swimmer.name + ": " + str(swimmer.projected_points))
 
 
 if __name__ == "__main__":
