@@ -11,6 +11,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
+from ortools.linear_solver import pywraplp
+
 class Entry:
     """
     Holds all information for an entry in an event
@@ -279,6 +281,13 @@ class DataParser:
         self.swimmers = swimmers
         return swimmers
 
+class IntegerProgram:
+    def __init__(self):
+        # Mixed integer program solver
+        self.solver = pywraplp.Solver.CreateSolver("SAT")
+
+    def add_constraint(self, constraint: str):
+        exec("self.solver.Add(" + constraint + ")")
 
 def check_valid_input() -> bool:
     """
