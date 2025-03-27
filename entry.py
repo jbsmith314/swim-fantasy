@@ -1,6 +1,6 @@
 class Entry:
     """
-    Holds all information for an entry in an event
+    Holds all information for an entry in an event.
     """
     def __init__(self, event: str, time: float):
         self.event = event

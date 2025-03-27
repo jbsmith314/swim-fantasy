@@ -86,7 +86,12 @@ class DataParser:
 
     def get_event(self, line: str) -> Tuple[str, str]:
         """
-        Get the event entry and return the rest of the line separate from it.
+        Get the event name and return it along with the rest of the line separate from it.
+
+            Keyword arguments:
+            line: the line of text to find the event name in
+
+        Return the event name and rest of the text
         """
         try:
             cutoff = line.index("  -  ")
@@ -101,6 +106,15 @@ class DataParser:
 
 
     def get_height(self, text: str) -> Tuple[float, str]:
+        """
+        Get the height and return it along with the rest of the line separate from it.
+
+            Keyword arguments:
+            text: the text to find the height in
+
+        Return the height if found, and None if it's not found,
+        along with the rest of the text
+        """
         if text[-1] == '"':
             height = float(text.split()[-3])
             rest = " ".join(text.split()[:-3])
@@ -110,17 +124,37 @@ class DataParser:
 
 
     def get_birthday(self, text: str) -> Tuple[str, str]:
+        """
+        Get the birthday and name from a line of text.
+
+            Keyword arguments:
+            text: the text to find the birthday in
+
+        Return the birthday and swimmer name
+        """
         birthday = " ".join(text.split()[-3:])
         name = " ".join(text.split()[:-3])
         return birthday, name
 
 
     def update_seeds(self, swimmers: List[Swimmer]):
+        """
+        Update the seeds for all swimmers.
+
+            Keyword arguments:
+            swimmers: the swimmers to iterate through
+        """
         for swimmer in swimmers:
             swimmer.update_seeds(swimmers)
 
 
     def update_projected_points(self, swimmers: List[Swimmer], base_times: Dict, schedule: Dict):
+        """
+        Update the projected points for all swimmers.
+
+            Keyword arguments:
+            swimmers: the swimmers to iterate through
+        """
         for swimmer in swimmers:
             swimmer.update_projected_points(base_times, schedule)
 

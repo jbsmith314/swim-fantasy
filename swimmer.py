@@ -18,6 +18,12 @@ class Swimmer:
         return "Name: " + self.name + "\nCountry: " + self.country + "\nBirthday: " + self.birthday + "\nHeight: " + str(self.height)
     
     def add_event(self, entry: str):
+        """
+        Create and add an entry to the swimmer's entries.
+
+            Keyword arguments:
+            entry: the string representation of the entry to add
+        """
         time_text = entry.split()[-1]
         if time_text[-1] not in [str(x) for x in range(10)]:
             return
@@ -30,6 +36,12 @@ class Swimmer:
         self.entries[event] = Entry(event, round(time, 2))
     
     def update_seeds(self, swimmers):
+        """
+        Get this swimmer's seeds for all events they're entered in.
+
+            Keyword arguments:
+            swimmers: all swimmers to go through
+        """
         for event in self.entries:
             seed = 1
             for swimmer in swimmers:
@@ -38,6 +50,13 @@ class Swimmer:
             self.entries[event].seed = seed
     
     def update_projected_points(self, base_times: Dict, schedule: Dict):
+        """
+        Get the projected points for each day of the meet for this swimmer.
+
+            Keyword arguments:
+            base_times: the base times to compare to when calculating points
+            schedule: the schedule of which events are on which day
+        """
         for event, entry in self.entries.items():
             entry.projected_points = math.floor((base_times[event] / entry.time) ** 3 * 1000)
             for day in schedule:
