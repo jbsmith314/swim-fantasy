@@ -8,6 +8,7 @@ class Swimmer:
     """
     def __init__(self, name: str, country: str, birthday: str, height: float, num_days: int):
         self.name = name
+        self.sex = None
         self.country = country
         self.birthday = birthday
         self.height = height
@@ -34,6 +35,17 @@ class Swimmer:
 
         event = " ".join(entry.split()[:-1])
         self.entries[event] = Entry(event, round(time, 2))
+
+        if self.sex:
+            return
+        
+        if event[0] == "W":
+            self.sex = "Female"
+        elif event[0] == "M":
+            self.sex = "Male"
+        else:
+            raise Exception("Unable to identify sex")
+
     
     def update_seeds(self, swimmers):
         """
@@ -63,4 +75,3 @@ class Swimmer:
                 events = [x[0] for x in schedule[day]]
                 if event in events:
                     self.projected_points[day - 1] += entry.projected_points
-                    print("Done")

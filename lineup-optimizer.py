@@ -1,6 +1,6 @@
 import sys
 from data_parser import DataParser
-from integer_program import IntegerProgram
+from integer_program import Solver
 
 SCHEDULE_URL = "https://www.worldaquatics.com/competitions/3433/world-aquatics-swimming-championships-25m-2024/schedule?phase=All"
 
@@ -35,8 +35,8 @@ def main():
     swimmers = parser.get_swimmers(psych_sheet_filename)
     parser.update_seeds(swimmers)
     parser.update_projected_points(swimmers, base_times, schedule)
-    
-    solver = IntegerProgram()
+
+    solver = Solver(swimmers)
 
 
 if __name__ == "__main__":
