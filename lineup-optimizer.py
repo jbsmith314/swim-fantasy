@@ -33,12 +33,8 @@ def main():
     base_times = parser.get_base_times(base_times_filename)
     schedule = parser.get_schedule(SCHEDULE_URL)
     swimmers = parser.get_swimmers(psych_sheet_filename)
-
     parser.update_seeds(swimmers)
     parser.update_projected_points(swimmers, base_times, schedule)
-
-    for swimmer in swimmers:
-        print(swimmer.name + ": " + str(swimmer.projected_points))
     
     solver = IntegerProgram()
 
