@@ -14,6 +14,8 @@ class Swimmer:
         self.height = height
         self.entries = {}
         self.projected_points = [0] * num_days
+
+        self.cost = 25
     
     def __repr__(self) -> str:
         return "Name: " + self.name + "\nCountry: " + self.country + "\nBirthday: " + self.birthday + "\nHeight: " + str(self.height)
