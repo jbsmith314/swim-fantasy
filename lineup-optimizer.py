@@ -36,10 +36,11 @@ def main():
     parser.update_seeds(swimmers)
     parser.update_projected_points(swimmers, base_times, schedule)
 
-    day = int(input(f"Choose a day of the meet (from 1 - {len(schedule) + 1}): "))
-    solver = SingleDaySolver(swimmers, day)
-    solver.get_data()
-    solver.solve()
+    # day = int(input(f"Choose a day of the meet (from 1 - {len(schedule) + 1}): "))
+    for day in range(len(schedule)):
+        solver = SingleDaySolver(swimmers, day)
+        solver.get_data()
+        solver.solve()
 
 
 if __name__ == "__main__":
