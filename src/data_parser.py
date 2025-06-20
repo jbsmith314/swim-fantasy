@@ -97,7 +97,7 @@ class DataParser:
             cutoff = line.index("  -  ")
             other = line[:cutoff]
             event = line[cutoff + 5:]
-        except:
+        except Exception:
             cutoff = line.index('"')
             other = line[:cutoff + 1]
             event = line[cutoff + 2:]

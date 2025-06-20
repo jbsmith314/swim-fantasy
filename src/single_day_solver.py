@@ -1,7 +1,6 @@
 from ortools.linear_solver import pywraplp
 from typing import List
 from swimmer import Swimmer
-import re
 
 ROSTER_SIZE = 8
 BUDGET = 200

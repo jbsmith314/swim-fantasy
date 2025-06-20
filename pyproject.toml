@@ -1,0 +1,20 @@
+[project]
+name = "swim-fantasy"
+version = "0.1.0"
+description = "A tool for free World Aquatics merchandise"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.1.1",
+    "pip>=25.1.1",
+    "ruff>=0.12.0",
+    "scipy>=1.15.3",
+]
+
+[tool.ruff]
+# lint.extend-select = ["ALL"]
+lint.ignore = [
+    "D203",  # Use a single blank line after a function or class docstring
+    "D212",  # Have text on the first line of a multiline docstring
+    "T201",  # Used a print statement (don't use print statements in production code)
+]
