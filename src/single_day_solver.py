@@ -1,13 +1,20 @@
+"""A class to solve the mixed integer program for a single day of a swim meet."""
+
+import sys
+
 from ortools.linear_solver import pywraplp
-from typing import List
+
 from swimmer import Swimmer
 
 ROSTER_SIZE = 8
 BUDGET = 200
+DEBUG = False
 
 class SingleDaySolver:
-    def __init__(self, swimmers: List[Swimmer], day: int):
-        # Mixed integer program solver
+    """A class to solve the mixed integer program for a single day of the swim meet."""
+
+    def __init__(self, swimmers: list[Swimmer], day: int) -> None:
+        """Initialize the SingleDaySolver with a list of swimmers and the day of the meet."""
         self.day = day
         self.solver = None
         self.male_swimmers = self._get_male_swimmers(swimmers)
@@ -20,9 +27,15 @@ class SingleDaySolver:
         self.num_females = len(self.female_swimmers)
         self.num_males = len(self.male_swimmers)
         self.solution_values = []
-    
 
-    def get_data(self):
+
+    def __repr__(self) -> str:
+        """Return a string representation of the SingleDaySolver."""
+        return f"SingleDaySolver(day={self.day}, num_females={self.num_females}, num_males={self.num_males})"
+
+
+    def get_data(self) -> None:
+        """Get the data needed to solve the mixed integer program."""
         # female projected points from greatest to least
         self.female_points = [x.projected_points[self.day - 1] for x in self.female_swimmers]
         # male projected points from greatest to least
@@ -32,9 +45,10 @@ class SingleDaySolver:
         self.female_costs = [x.cost for x in self.female_swimmers]
         # male costs in same swimmer order as projected points
         self.male_costs = [x.cost for x in self.male_swimmers]
-    
 
-    def solve(self):
+
+    def solve(self) -> None:
+        """Solve the mixed integer program to find the optimal lineup for the day."""
         self.solver = pywraplp.Solver.CreateSolver("SAT")
         self._get_solution()
 
@@ -44,61 +58,54 @@ class SingleDaySolver:
         print(f"With a total score of: {int(self.solver.Objective().Value() + captain.projected_points[self.day - 1])}")
 
 
-    def _get_optimal_lineup(self):
+    def _get_optimal_lineup(self) -> tuple[list[Swimmer], Swimmer]:
         indices = list(filter(lambda x: self.solution_values[x], range(self.num_females)))
-        lineup_female = list(map(lambda x: self.female_swimmers[x], indices))
+        lineup_female = [self.female_swimmers[x] for x in indices]
 
         indices = list(filter(lambda x: self.solution_values[x], range(self.num_females, self.num_females + self.num_males)))
-        lineup_male = list(map(lambda x: self.male_swimmers[x - self.num_females], indices))
+        lineup_male = [self.male_swimmers[x - self.num_females] for x in indices]
 
         lineup = lineup_female + lineup_male
         captain = max(lineup, key=lambda x: x.projected_points[self.day - 1])
 
         return lineup, captain
 
-
-    def _get_solution(self):
+    def _get_solution(self) -> None:
         # Declare decision variables for female swimmers
+        female_vars = []
         for index in range(self.num_females):
-            new_constraint = f"x{index + 1} = self.solver.IntVar(0, 1, 'x{index + 1}')"
-            exec(new_constraint)
+            var = self.solver.IntVar(0, 1, f"x{index + 1}")
+            female_vars.append(var)
 
         # Declare decision variables for male swimmers
+        male_vars = []
         for index in range(self.num_males):
-            new_constraint = f"y{index + 1} = self.solver.IntVar(0, 1, 'y{index + 1}')"
-            exec(new_constraint)
+            var = self.solver.IntVar(0, 1, f"y{index + 1}")
+            male_vars.append(var)
 
-        # Create and declare objective function
-        objective_function = ""
+        # Create objective function
+        objective_terms = []
         for index, swimmer in enumerate(self.female_swimmers):
-            objective_function += f"{swimmer.projected_points[self.day - 1]}*x{index + 1} + "
+            objective_terms.append(swimmer.projected_points[self.day - 1] * female_vars[index])
         for index, swimmer in enumerate(self.male_swimmers):
-            objective_function += f"{swimmer.projected_points[self.day - 1]}*y{index + 1} + "
-        objective_function = f"self.solver.Maximize({objective_function.rstrip("+ ")})"
-        exec(objective_function)
-    
+            objective_terms.append(swimmer.projected_points[self.day - 1] * male_vars[index])
+
+        self.solver.Maximize(sum(objective_terms))
+
         # Budget constraint
-        budget_constraint = ""
+        budget_terms = []
         for index, swimmer in enumerate(self.female_swimmers):
-            budget_constraint += f"{swimmer.cost}*x{index + 1} + "
+            budget_terms.append(swimmer.cost * female_vars[index])
         for index, swimmer in enumerate(self.male_swimmers):
-            budget_constraint += f"{swimmer.cost}*y{index + 1} + "
-        budget_constraint = f"self.solver.Add({budget_constraint.rstrip("+ ")} <= {BUDGET})"
-        exec(budget_constraint)
+            budget_terms.append(swimmer.cost * male_vars[index])
+
+        self.solver.Add(sum(budget_terms) <= BUDGET)
 
         # Number of females constraint
-        num_females_constraint = "self.solver.Add("
-        for index in range(self.num_females):
-            num_females_constraint += f"x{index + 1} + "
-        num_females_constraint = f"{num_females_constraint.rstrip("+ ")} <= {ROSTER_SIZE / 2})"
-        exec(num_females_constraint)
+        self.solver.Add(sum(female_vars) <= ROSTER_SIZE // 2)
 
         # Number of males constraint
-        num_males_constraint = "self.solver.Add("
-        for index in range(self.num_males):
-            num_males_constraint += f"y{index + 1} + "
-        num_males_constraint = f"{num_males_constraint.rstrip("+ ")} <= {ROSTER_SIZE / 2})"
-        exec(num_males_constraint)
+        self.solver.Add(sum(male_vars) <= ROSTER_SIZE // 2)
 
         # Solve
         print(f"Solving with {self.solver.SolverVersion()}")
@@ -106,20 +113,18 @@ class SingleDaySolver:
 
         # Check that solver worked
         if status != pywraplp.Solver.OPTIMAL:
-            raise Exception("No optimal solution found")
+            msg = f"Solver failed with status {status}. Exiting program."
+            sys.exit(msg)
 
-        # Make solution_values_list"
-        solution_values_list = ""
-        for i in range(self.num_females):
-            solution_values_list += f"x{i + 1}.solution_value(), "
-        for i in range(self.num_males):
-            solution_values_list += f"y{i + 1}.solution_value(), "
-        solution_values_list = f"[{solution_values_list.rstrip(", ")}]"
+        # Get solution values
+        self.solution_values = []
+        for var in female_vars:
+            self.solution_values.append(var.solution_value())
+        for var in male_vars:
+            self.solution_values.append(var.solution_value())
 
-        exec(f"self.solution_values = {solution_values_list}")
-    
 
-    def _print_lineup(self, lineup, captain):
+    def _print_lineup(self, lineup: list[Swimmer], captain: Swimmer) -> None:
         for swimmer in lineup:
             print(f"{swimmer.name}", end="")
             if swimmer is captain:
@@ -127,21 +132,15 @@ class SingleDaySolver:
             else:
                 print(f" ({int(swimmer.projected_points[self.day - 1])})", end="")
             print()
-    
 
-    def _get_male_swimmers(self, swimmers: List[Swimmer]) -> List[Swimmer]:
-        male_swimmers = []
-        for swimmer in swimmers:
-            if swimmer.sex == "Male":
-                male_swimmers.append(swimmer)
-        
+
+    def _get_male_swimmers(self, swimmers: list[Swimmer]) -> list[Swimmer]:
+        male_swimmers = [swimmer for swimmer in swimmers if swimmer.sex == "Male"]
+
         return sorted(male_swimmers, key=lambda x: x.projected_points[self.day - 1], reverse=True)
-    
 
-    def _get_female_swimmers(self, swimmers: List[Swimmer]) -> List[Swimmer]:
-        female_swimmers = []
-        for swimmer in swimmers:
-            if swimmer.sex == "Female":
-                female_swimmers.append(swimmer)
+
+    def _get_female_swimmers(self, swimmers: list[Swimmer]) -> list[Swimmer]:
+        female_swimmers = [swimmer for swimmer in swimmers if swimmer.sex == "Female"]
 
         return sorted(female_swimmers, key=lambda x: x.projected_points[self.day - 1], reverse=True)

@@ -6,15 +6,23 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "flask>=3.1.1",
+    "ortools>=9.14.6206",
     "pip>=25.1.1",
+    "pypdf>=5.6.1",
     "ruff>=0.12.0",
     "scipy>=1.15.3",
+    "selenium>=4.33.0",
+    "webdriver-manager>=4.0.2",
 ]
 
 [tool.ruff]
-# lint.extend-select = ["ALL"]
+lint.extend-select = ["ALL"]
 lint.ignore = [
-    "D203",  # Use a single blank line after a function or class docstring
-    "D212",  # Have text on the first line of a multiline docstring
-    "T201",  # Used a print statement (don't use print statements in production code)
+    "D203",   # Use a single blank line after a function or class docstring
+    "D212",   # Have text on the first line of a multiline docstring
+    "E501",   # Line too long
+    "FIX002", # Line contains a TODO comment
+    "TD002",  # Missing author in TODO
+    "TD003",  # Missing issue link for this TODO
+    "T201",   # Used a print statement (don't use print statements in production code)
 ]
