@@ -11,7 +11,7 @@ FIVE = 5
 class Swimmer:
     """Holds all information for a swimmer entered in the meet."""
 
-    def __init__(self, name: str, country: str, birthday: str, height: float, num_days: int) -> None:
+    def __init__(self, name: str, country: str | None, birthday: str | None, height: float | None, num_days: int) -> None:
         """Cretes a swimmer with the given name, country, birthday, height, and number of days in the meet."""
         self.name = name
         self.sex = None
@@ -21,6 +21,7 @@ class Swimmer:
         self.entries = {}
         self.projected_points = [0] * num_days
 
+        # Just a placeholder for the cost, which will figure out how to scrape later once the website is up
         self.cost = 25
 
     def __repr__(self) -> str:
@@ -56,8 +57,7 @@ class Swimmer:
             self.sex = "Male"
         else:
             msg = f"Swimmer {self.name} has an event that does not start with 'W' or 'M': {event}"
-            # TODO: Use a logger instead of print
-            print(msg)
+            raise ValueError(msg)
 
 
     def update_seeds(self, swimmers: list[Swimmer]) -> None:

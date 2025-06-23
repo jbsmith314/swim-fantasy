@@ -158,7 +158,13 @@ class DataParser:
 
 
     def get_schedule_chunks(self, schedule_url: str) -> list[str]:
-        """TODO: Add documentation."""
+        """
+        Return one chunk of the schedule for each day in the meet.
+
+        Keyword Arguments:
+            schedule_url: the URL of the schedule to get
+
+        """
         chrome_options = Options()
         chrome_options.add_argument("--headless")
 
@@ -166,15 +172,14 @@ class DataParser:
 
         driver.get(schedule_url)
 
-        # Wait for the page to load fully
+        print("\n1/2 - Fetching schedule from the web page...")
         time.sleep(5)  # Adjust this time if the page is taking longer to load
-
-        # Find all elements with the class name "schedule__day"
         lines = driver.find_elements(By.CLASS_NAME, "schedule__day")
+        print("2/2 - Parsing schedule...\n")
+
         lines_text = [line.text for line in lines]
         driver.quit()
 
-        print(lines_text)
         return lines_text
 
 

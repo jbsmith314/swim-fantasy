@@ -53,7 +53,7 @@ class SingleDaySolver:
         self._get_solution()
 
         optimal_lineup, captain = self._get_optimal_lineup()
-        print("The optimal lineup is:")
+        print(f"The optimal lineup for day {self.day} is:")
         self._print_lineup(optimal_lineup, captain)
         print(f"With a total score of: {int(self.solver.Objective().Value() + captain.projected_points[self.day - 1])}")
 
@@ -108,7 +108,6 @@ class SingleDaySolver:
         self.solver.Add(sum(male_vars) <= ROSTER_SIZE // 2)
 
         # Solve
-        print(f"Solving with {self.solver.SolverVersion()}")
         status = self.solver.Solve()
 
         # Check that solver worked
@@ -128,10 +127,9 @@ class SingleDaySolver:
         for swimmer in lineup:
             print(f"{swimmer.name}", end="")
             if swimmer is captain:
-                print(f" (Captain) ({int(swimmer.projected_points[self.day - 1] * 2)})", end="")
+                print(f" (Captain) ({int(swimmer.projected_points[self.day - 1] * 2)})")
             else:
-                print(f" ({int(swimmer.projected_points[self.day - 1])})", end="")
-            print()
+                print(f" ({int(swimmer.projected_points[self.day - 1])})")
 
 
     def _get_male_swimmers(self, swimmers: list[Swimmer]) -> list[Swimmer]:
