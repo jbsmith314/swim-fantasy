@@ -12,6 +12,7 @@ class Entry:
         self.time = time
         self.seed = None
         self.projected_points = None
+        self.excluded = False
 
     def __repr__(self) -> str:
         """Return a string representation of the Entry object."""

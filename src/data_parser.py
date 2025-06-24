@@ -114,18 +114,10 @@ class DataParser:
             swimmer.update_seeds(swimmers)
 
 
-    def update_projected_points(self, swimmers: list[Swimmer], base_times: dict, schedule: dict) -> None:
-        """
-        Update the projected points for all swimmers.
-
-        Keyword Arguments:
-            swimmers: the swimmers to iterate through
-            base_times: the base times to compare to when calculating points
-            schedule: the schedule of which events are on which day
-
-        """
-        for swimmer in swimmers:
-            swimmer.update_projected_points(base_times, schedule)
+    def update_projected_points(self) -> None:
+        """Update the projected points for all swimmers."""
+        for swimmer in self.swimmers:
+            swimmer.update_projected_points()
 
 
     def _get_text(self, filename: str) -> str:

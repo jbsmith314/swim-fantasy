@@ -1,6 +1,8 @@
 """The main script to run the lineup optimizer for the World Aquatics Swimming Championships Fantasy Game."""
 
+import json
 import sys
+from pathlib import Path
 
 from data_parser import DataParser
 from single_day_solver import SingleDaySolver
@@ -35,13 +37,46 @@ def main() -> None:
 
     parser = DataParser()
     base_times = parser.get_base_times(base_times_filename)
-    schedule = parser.get_schedule(SCHEDULE_URL)
+
+    # ------------------------- Get schedule -------------------------
+
+    with Path("schedule.json").open("r") as file:
+        data = json.load(file)
+
+    # If the schedule URL matches the cached one, use the cached schedule
+    # Otherwise, fetch a new schedule
+    if data.get("schedule_url", "") == SCHEDULE_URL:
+        print("Using cached schedule.")
+        # Convert string keys to integers for the schedule
+        string_keys_schedule = data.get("schedule", {})
+        parser.schedule = {int(k): v for k, v in string_keys_schedule.items()}
+    else:
+        if data.get("schedule_url", ""):
+            print("Schedule URL has changed. Fetching new schedule.")
+        else:
+            print("No cached schedule found. Fetching new schedule.")
+
+        parser.get_schedule(SCHEDULE_URL)
+
+        with Path("schedule.json").open("w") as json_file:
+            schedule_data = {
+                "schedule": parser.schedule,
+                "schedule_url": SCHEDULE_URL,
+            }
+            json.dump(schedule_data, json_file)
+
+    print(parser.schedule)
+
+    # ------------------------------------------------------------------
+
     swimmers = parser.get_swimmers(psych_sheet_filename)
     parser.update_seeds(swimmers)
-    parser.update_projected_points(swimmers, base_times, schedule)
+    parser.update_projected_points()
 
     solver = SingleDaySolver(swimmers, DAY)
-    solver.get_data()
+    solver.exclude_swimmer("KORSTANJE Nyls")
+    solver.solve()
+    solver.exclude_entry("PONTI Noe", "Men's 100m Butterfly")
     solver.solve()
 
 

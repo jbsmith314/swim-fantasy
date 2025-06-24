@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
 
 from entry import Entry
 
@@ -19,6 +21,7 @@ class Swimmer:
         self.height = height
         self.entries = {}
         self.projected_points = [0] * num_days
+        self.excluded = False
 
         # Just a placeholder for the cost, which will figure out how to scrape later once the website is up
         self.sex = None
@@ -77,17 +80,22 @@ class Swimmer:
                     seed += 1
             self.entries[event].seed = seed
 
-    def update_projected_points(self, base_times: dict, schedule: dict) -> None:
-        """
-        Get the projected points for each day of the meet for this swimmer.
+    def update_projected_points(self) -> None:
+        """Get the projected points for each day of the meet for this swimmer."""
+        with Path("schedule.json").open("r") as json_file:
+            data = json.load(json_file)
 
-        Keyword Arguments:
-            base_times: the base times to compare to when calculating points
-            schedule: the schedule of which events are on which day
+        base_times = data.get("base_times")
+        string_keys_schedule = data.get("schedule", {})
+        schedule = {int(k): v for k, v in string_keys_schedule.items()}
 
-        """
+        # Reset projected points for each day to 0
+        self.projected_points = [0] * len(self.projected_points)
+
         for swimmer_event, entry in self.entries.items():
             entry.projected_points = math.floor((base_times[swimmer_event] / entry.time) ** 3 * 1000)
+            if entry.excluded:
+                continue
             for day, day_events in schedule.items():
                 events = [x[0] for x in day_events]
                 if swimmer_event in events:
