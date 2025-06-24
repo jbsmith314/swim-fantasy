@@ -5,6 +5,7 @@ import sys
 from data_parser import DataParser
 from single_day_solver import SingleDaySolver
 
+# TODO: SCHEDULE_URL needs to change for each meet
 SCHEDULE_URL = "https://www.worldaquatics.com/competitions/3433/world-aquatics-swimming-championships-25m-2024/schedule?phase=All"
 NUM_EXPECTED_ARGS = 3
 DAY = 5

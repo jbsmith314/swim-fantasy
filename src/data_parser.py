@@ -24,111 +24,82 @@ class DataParser:
         self.swimmers = None
 
 
-    def get_text(self, filename: str) -> str:
+    def get_base_times(self, base_times_filename: str) -> dict:
         """
-        Get all of the text from the pdf.
+        Get the base times from the base times file.
 
         Keyword Arguments:
-            filename: the pdf to extract text from
+            base_times_filename: the filename of the base times file
 
         """
-        reader = PdfReader(filename)
+        lines = self._get_text(base_times_filename).split("\n")
+        filtered_lines = [line for line in lines if line and line.split()[0][-1] == "m" and "Relay" not in line]
 
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text()
+        base_times = {}
+        for line in filtered_lines:
+            event = " ".join(line.split()[:-4])
+            women_event_name = self._format_event_name("Women's " + event)
+            base_times[women_event_name] = float(line.split()[-1])
+            men_event_name = self._format_event_name("Men's " + event)
+            base_times[men_event_name] = float(line.split()[-3])
 
-        return text
+        self.base_times = base_times
+        return base_times
 
 
-    def is_overhead(self, line: str) -> bool:
+    def get_schedule(self, schedule_url: str) -> dict:
         """
-        Check if a line of text is overhead from the psych sheet or part of an event entry.
+        Get the schedule from the schedule URL.
 
         Keyword Arguments:
-            line: line of text to check
+            schedule_url: the URL of the schedule to get
 
         """
-        # Check if it's an event entry
-        is_event_entry = bool(re.search("en's", line))
-        if is_event_entry:
-            return False
+        chunks = self._get_schedule_chunks(schedule_url)
+        lines = []
+        schedule = {}
+        for chunk_index, chunk in enumerate(chunks):
+            lines = chunk.split("\n")
+            day = chunk_index + 1
+            schedule[day] = []
+            for line_index, line in enumerate(lines):
+                if line.split()[0][-2:] == "en" and "Relay" not in line and lines[line_index + 1] != "Heats":
+                    schedule[day].append((self._format_event_name(line), lines[line_index + 1]))
 
-        # Check if it's a country name
-        is_country_name = bool(re.search("[A-Z][A-Z][A-Z] - ", line))
-        return not is_country_name
+        self.schedule = schedule
+        return schedule
 
 
-    def delete_overhead(self, lines: list[str]) -> list[str]:
+    def get_swimmers(self, psych_sheet_filename: str) -> list[Swimmer]:
         """
-        Remove all overhead lines from lines.
+        Get a list of swimmers and their events.
 
         Keyword Arguments:
-            lines: the list of lines to be filtered
+            psych_sheet_filename: the filename of the psych sheet to parse
 
         """
-        filtered_lines = list(filter(lambda x: not self.is_overhead(x), lines))
-        return [line.strip() for line in filtered_lines]
+        num_days = len(self.schedule)
+        lines = self._get_entries(psych_sheet_filename)
+        swimmers = []
+        country = None
+        for line in lines:
+            if line[3:6] == " - ":
+                country = line[6:]
+            elif line[:5] == "Women" or line[:3] == "Men":
+                if len(swimmers) == 0:
+                    msg = "No swimmers to add the event to. Exiting program"
+                    sys.exit(msg)
+                swimmers[-1].add_event(line)
+            else:
+                event, rest = self._get_event(line)
+                height, rest = self._get_height(rest)
+                birthday, name = self._get_birthday(rest)
+                new_swimmer = Swimmer(name, country, birthday, height, num_days)
+                new_swimmer.add_event(event)
+                swimmers.append(new_swimmer)
 
-
-    def get_entries(self, filename: str) -> list[str]:
-        """Get the entries from the psych sheet."""
-        pdf_text = self.get_text(filename)
-
-        lines = pdf_text.split("\n")
-        cutoff = lines.index("Entry List by NAT")
-        entry_lines = lines[cutoff:]
-
-        return self.delete_overhead(entry_lines)
-
-
-    def get_event(self, line: str) -> tuple[str, str]:
-        """
-        Get the event name and return it along with the rest of the line separate from it.
-
-        Keyword Arguments:
-            line: the line of text to find the event name in
-
-        """
-        try:
-            cutoff = line.index("  -  ")
-            other = line[:cutoff]
-            event = line[cutoff + 5:]
-        except ValueError:
-            cutoff = line.index('"')
-            other = line[:cutoff + 1]
-            event = line[cutoff + 2:]
-
-        return event, other
-
-
-    def get_height(self, text: str) -> tuple[float | None, str]:
-        """
-        Get the height and return it along with the rest of the line separate from it.
-
-        Keyword Arguments:
-            text: the text to find the height in
-
-        """
-        if text[-1] == '"':
-            height = float(text.split()[-3])
-            rest = " ".join(text.split()[:-3])
-            return height, rest
-
-        return None, text
-
-
-    def get_birthday(self, text: str) -> tuple[str, str]:
-        """
-        Get the birthday and name from a line of text.
-
-        Keyword Arguments:
-            text: the text to find the birthday in
-
-        """
-        birthday = " ".join(text.split()[-3:])
-        name = " ".join(text.split()[:-3])
-        return birthday, name
+        self.swimmers = swimmers
+        return swimmers
 
 
     def update_seeds(self, swimmers: list[Swimmer]) -> None:
@@ -157,7 +128,114 @@ class DataParser:
             swimmer.update_projected_points(base_times, schedule)
 
 
-    def get_schedule_chunks(self, schedule_url: str) -> list[str]:
+    def _get_text(self, filename: str) -> str:
+        """
+        Get all of the text from the pdf.
+
+        Keyword Arguments:
+            filename: the pdf to extract text from
+
+        """
+        reader = PdfReader(filename)
+
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text()
+
+        return text
+
+
+    def _is_overhead(self, line: str) -> bool:
+        """
+        Check if a line of text is overhead from the psych sheet or part of an event entry.
+
+        Keyword Arguments:
+            line: line of text to check
+
+        """
+        # Check if it's an event entry
+        is_event_entry = bool(re.search("en's", line))
+        if is_event_entry:
+            return False
+
+        # Check if it's a country name
+        is_country_name = bool(re.search("[A-Z][A-Z][A-Z] - ", line))
+        return not is_country_name
+
+
+    def _delete_overhead(self, lines: list[str]) -> list[str]:
+        """
+        Remove all overhead lines from lines.
+
+        Keyword Arguments:
+            lines: the list of lines to be filtered
+
+        """
+        filtered_lines = list(filter(lambda x: not self._is_overhead(x), lines))
+        return [line.strip() for line in filtered_lines]
+
+
+    def _get_entries(self, filename: str) -> list[str]:
+        """Get the entries from the psych sheet."""
+        pdf_text = self._get_text(filename)
+
+        lines = pdf_text.split("\n")
+        cutoff = lines.index("Entry List by NAT")
+        entry_lines = lines[cutoff:]
+
+        return self._delete_overhead(entry_lines)
+
+
+    def _get_event(self, line: str) -> tuple[str, str]:
+        """
+        Get the event name and return it along with the rest of the line separate from it.
+
+        Keyword Arguments:
+            line: the line of text to find the event name in
+
+        """
+        try:
+            cutoff = line.index("  -  ")
+            other = line[:cutoff]
+            event = line[cutoff + 5:]
+        except ValueError:
+            cutoff = line.index('"')
+            other = line[:cutoff + 1]
+            event = line[cutoff + 2:]
+
+        return event, other
+
+
+    def _get_height(self, text: str) -> tuple[float | None, str]:
+        """
+        Get the height and return it along with the rest of the line separate from it.
+
+        Keyword Arguments:
+            text: the text to find the height in
+
+        """
+        if text[-1] == '"':
+            height = float(text.split()[-3])
+            rest = " ".join(text.split()[:-3])
+            return height, rest
+
+        return None, text
+
+
+    def _get_birthday(self, text: str) -> tuple[str, str]:
+        """
+        Get the birthday and name from a line of text.
+
+        Keyword Arguments:
+            text: the text to find the birthday in
+
+        """
+        birthday = " ".join(text.split()[-3:])
+        name = " ".join(text.split()[:-3])
+        return birthday, name
+
+
+    def _get_schedule_chunks(self, schedule_url: str) -> list[str]:
         """
         Return one chunk of the schedule for each day in the meet.
 
@@ -183,7 +261,7 @@ class DataParser:
         return lines_text
 
 
-    def format_event_name(self, event: str) -> str:
+    def _format_event_name(self, event: str) -> str:
         """
         Convert event text into same event name as on psych sheet.
 
@@ -193,81 +271,3 @@ class DataParser:
         """
         partially_corrected = re.sub("m Medley", "m Individual Medley", event)
         return re.sub("en ", "en's ", partially_corrected)
-
-
-    def get_base_times(self, base_times_filename: str) -> dict:
-        """
-        Get the base times from the base times file.
-
-        Keyword Arguments:
-            base_times_filename: the filename of the base times file
-
-        """
-        lines = self.get_text(base_times_filename).split("\n")
-        filtered_lines = [line for line in lines if line and line.split()[0][-1] == "m" and "Relay" not in line]
-
-        base_times = {}
-        for line in filtered_lines:
-            event = " ".join(line.split()[:-4])
-            women_event_name = self.format_event_name("Women's " + event)
-            base_times[women_event_name] = float(line.split()[-1])
-            men_event_name = self.format_event_name("Men's " + event)
-            base_times[men_event_name] = float(line.split()[-3])
-
-        self.base_times = base_times
-        return base_times
-
-
-    def get_schedule(self, schedule_url: str) -> dict:
-        """
-        Get the schedule from the schedule URL.
-
-        Keyword Arguments:
-            schedule_url: the URL of the schedule to get
-
-        """
-        chunks = self.get_schedule_chunks(schedule_url)
-        lines = []
-        schedule = {}
-        for chunk_index, chunk in enumerate(chunks):
-            lines = chunk.split("\n")
-            day = chunk_index + 1
-            schedule[day] = []
-            for line_index, line in enumerate(lines):
-                if line.split()[0][-2:] == "en" and "Relay" not in line and lines[line_index + 1] != "Heats":
-                    schedule[day].append((self.format_event_name(line), lines[line_index + 1]))
-
-        self.schedule = schedule
-        return schedule
-
-
-    def get_swimmers(self, psych_sheet_filename: str) -> list[Swimmer]:
-        """
-        Get a list of swimmers and their events.
-
-        Keyword Arguments:
-            psych_sheet_filename: the filename of the psych sheet to parse
-
-        """
-        num_days = len(self.schedule)
-        lines = self.get_entries(psych_sheet_filename)
-        swimmers = []
-        country = None
-        for line in lines:
-            if line[3:6] == " - ":
-                country = line[6:]
-            elif line[:5] == "Women" or line[:3] == "Men":
-                if len(swimmers) == 0:
-                    msg = "No swimmers to add the event to. Exiting program"
-                    sys.exit(msg)
-                swimmers[-1].add_event(line)
-            else:
-                event, rest = self.get_event(line)
-                height, rest = self.get_height(rest)
-                birthday, name = self.get_birthday(rest)
-                new_swimmer = Swimmer(name, country, birthday, height, num_days)
-                new_swimmer.add_event(event)
-                swimmers.append(new_swimmer)
-
-        self.swimmers = swimmers
-        return swimmers

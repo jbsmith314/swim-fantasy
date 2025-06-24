@@ -14,7 +14,6 @@ class Swimmer:
     def __init__(self, name: str, country: str | None, birthday: str | None, height: float | None, num_days: int) -> None:
         """Cretes a swimmer with the given name, country, birthday, height, and number of days in the meet."""
         self.name = name
-        self.sex = None
         self.country = country
         self.birthday = birthday
         self.height = height
@@ -22,6 +21,7 @@ class Swimmer:
         self.projected_points = [0] * num_days
 
         # Just a placeholder for the cost, which will figure out how to scrape later once the website is up
+        self.sex = None
         self.cost = 25
 
     def __repr__(self) -> str:
@@ -41,6 +41,7 @@ class Swimmer:
             return
 
         time = int(time_text[-5:-3]) + int(time_text[-2:]) / 100
+
         # If text is longer than 5 characters, it means there are minutes
         if len(time_text) > FIVE:
             time += 60 * int(time_text[:-6])
@@ -48,6 +49,7 @@ class Swimmer:
         event = " ".join(entry.split()[:-1])
         self.entries[event] = Entry(event, round(time, 2))
 
+        # set sex
         if self.sex:
             return
 
@@ -84,9 +86,9 @@ class Swimmer:
             schedule: the schedule of which events are on which day
 
         """
-        for event, entry in self.entries.items():
-            entry.projected_points = math.floor((base_times[event] / entry.time) ** 3 * 1000)
+        for swimmer_event, entry in self.entries.items():
+            entry.projected_points = math.floor((base_times[swimmer_event] / entry.time) ** 3 * 1000)
             for day, day_events in schedule.items():
                 events = [x[0] for x in day_events]
-                if event in events:
+                if swimmer_event in events:
                     self.projected_points[day - 1] += entry.projected_points
