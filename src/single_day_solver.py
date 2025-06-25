@@ -39,12 +39,27 @@ class SingleDaySolver:
         return f"SingleDaySolver(day={self.day}, num_females={self.num_females}, num_males={self.num_males})"
 
 
-    def solve(self) -> None:
+    def solve(self) -> tuple[list[Swimmer], Swimmer]:
         """Solve the mixed integer program to find the optimal lineup for the day."""
         self.solver = pywraplp.Solver.CreateSolver("SAT")
         self._get_data()
         self._get_solution()
-        self._get_optimal_lineup()
+        return self._get_optimal_lineup()
+
+
+    def exlude_lineup(self, lineup: list[Swimmer]) -> None:
+        """Exclude a specific lineup from being considered in the optimization."""
+        if DEBUG:
+            print(f"Excluding lineup: {[swimmer.name for swimmer in lineup]}")
+        self.forbidden_lineups.append(lineup)
+
+
+    def include_lineup(self, lineup: list[Swimmer]) -> None:
+        """Include a specific lineup back into consideration."""
+        if DEBUG:
+            print(f"Including lineup: {[swimmer.name for swimmer in lineup]}")
+        if lineup in self.forbidden_lineups:
+            self.forbidden_lineups.remove(lineup)
 
 
     def exclude_swimmer(self, swimmer_name: str) -> None:
@@ -69,6 +84,16 @@ class SingleDaySolver:
             if swimmer.name == swimmer_name and entry_event in swimmer.entries:
                 swimmer.entries[entry_event].excluded = True
                 print(f"Excluded entry {entry_event} for swimmer {swimmer_name}.")
+                swimmer.update_projected_points()
+                return
+
+
+    def include_entry(self, swimmer_name: str, entry_event: str) -> None:
+        """Include a specific entry for a swimmer."""
+        for swimmer in self.all_swimmers:
+            if swimmer.name == swimmer_name and entry_event in swimmer.entries:
+                swimmer.entries[entry_event].excluded = False
+                print(f"Included entry {entry_event} for swimmer {swimmer_name}.")
                 swimmer.update_projected_points()
                 return
 
@@ -141,7 +166,7 @@ class SingleDaySolver:
             self.solution_values.append(var.solution_value())
 
 
-    def _get_optimal_lineup(self) -> None:
+    def _get_optimal_lineup(self) -> tuple[list[Swimmer], Swimmer]:
         indices = list(filter(lambda x: self.solution_values[x], range(self.num_females)))
         lineup_female = [self.female_swimmers[x] for x in indices]
 
@@ -152,6 +177,7 @@ class SingleDaySolver:
         captain = max(lineup, key=lambda x: x.projected_points[self.day - 1])
 
         self._print_lineup(lineup, captain)
+        return lineup, captain
 
 
     def _print_lineup(self, lineup: list[Swimmer], captain: Swimmer) -> None:
