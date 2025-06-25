@@ -24,6 +24,11 @@ class DataParser:
         self.swimmers = None
 
 
+    def get_all_data(self) -> None:
+        """Get all data needed for the lineup optimizer."""
+        return
+
+
     def get_base_times(self, base_times_filename: str) -> dict:
         """
         Get the base times from the base times file.

@@ -11,6 +11,7 @@ from single_day_solver import SingleDaySolver
 SCHEDULE_URL = "https://www.worldaquatics.com/competitions/3433/world-aquatics-swimming-championships-25m-2024/schedule?phase=All"
 NUM_EXPECTED_ARGS = 3
 DAY = 5
+CACHE_FILE_PATH = Path(__file__).parent.parent.resolve() / "cached_data.json"
 
 def check_valid_input() -> bool:
     """Check valid command line input to run the program."""
@@ -36,24 +37,24 @@ def main() -> None:
     base_times_filename = sys.argv[2]
 
     parser = DataParser()
+    parser.get_all_data()
 
     try:
-        with Path("cached_data.json").open("r") as file:
+        with CACHE_FILE_PATH.open("r") as file:
             data = json.load(file)
     except FileNotFoundError:
+        print("Cache file not found. Creating a new cache file.")
         data = {}
 
     # ------------------------- Get schedule -------------------------
 
-    # If the schedule URL matches the cached one, use the cached schedule
-    # Otherwise, fetch a new schedule
+    # If the schedule URL matches the cached one, use the cached schedule, otherwise, fetch a new schedule
     if data.get("schedule_data", {}).get("schedule_url", "") == SCHEDULE_URL:
         print("Using cached schedule.")
         # Get cached schedule
         string_keys_schedule = data.get("schedule_data", {}).get("schedule", {})
         # Convert string keys to integers for the schedule
         parser.schedule = {int(k): v for k, v in string_keys_schedule.items()}
-        print(parser.schedule)  # ---------------------------- DEBUG ----------------------------
     else:
         if data.get("schedule_data", {}).get("schedule_url", ""):
             print("Schedule URL has changed. Fetching new schedule.")
@@ -64,22 +65,21 @@ def main() -> None:
 
     # ---------------------------------------- Get base times ----------------------------------------
 
-    # If the base times filename matches the cached one, use the cached base times
-    # Otherwise, fetch new base times
+    # If the base times filename matches the cached one, use the cached base times, otherwise, fetch new base times
     if data.get("base_times_data", {}).get("base_times_filename", "") == base_times_filename:
         print("Using cached base times.")
         # Get cached base times
         parser.base_times = data.get("base_times_data", {}).get("base_times", {})
     else:
         if data.get("base_times_data", {}).get("base_times_filename", ""):
-            print("Base times filename has changed. Fetching new base times.")
+            print("Base times filename has changed. Extracting new base times.")
         else:
-            print("No cached base times found. Fetching new base times.")
+            print("No cached base times found. Extracting new base times.")
 
         parser.get_base_times(base_times_filename)
 
-    # Update cache file
-    with Path("cached_data.json").open("w") as json_file:
+    # -------------------------------- Update cache file --------------------------------
+    with CACHE_FILE_PATH.open("w") as json_file:
         schedule_data = {
             "schedule_data": {
                 "schedule": parser.schedule,
@@ -98,7 +98,7 @@ def main() -> None:
     parser.update_seeds()
     parser.update_projected_points()
 
-
+    # ------------------------- Solve the optimal lineup for the day -------------------------
 
     solver = SingleDaySolver(parser.swimmers, DAY)
     solver.exclude_swimmer("KORSTANJE Nyls")
