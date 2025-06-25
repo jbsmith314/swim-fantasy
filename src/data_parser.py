@@ -70,7 +70,7 @@ class DataParser:
         return schedule
 
 
-    def get_swimmers(self, psych_sheet_filename: str) -> list[Swimmer]:
+    def create_swimmers(self, psych_sheet_filename: str) -> list[Swimmer]:
         """
         Get a list of swimmers and their events.
 
@@ -78,6 +78,7 @@ class DataParser:
             psych_sheet_filename: the filename of the psych sheet to parse
 
         """
+        print(self.schedule) # ---------------------------- DEBUG ----------------------------
         num_days = len(self.schedule)
         lines = self._get_entries(psych_sheet_filename)
         swimmers = []
@@ -102,16 +103,10 @@ class DataParser:
         return swimmers
 
 
-    def update_seeds(self, swimmers: list[Swimmer]) -> None:
-        """
-        Update the seeds for all swimmers.
-
-        Keyword Arguments:
-            swimmers: the swimmers to iterate through
-
-        """
-        for swimmer in swimmers:
-            swimmer.update_seeds(swimmers)
+    def update_seeds(self) -> None:
+        """Update the seeds for all swimmers."""
+        for swimmer in self.swimmers:
+            swimmer.update_seeds(self.swimmers)
 
 
     def update_projected_points(self) -> None:

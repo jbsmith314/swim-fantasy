@@ -82,11 +82,11 @@ class Swimmer:
 
     def update_projected_points(self) -> None:
         """Get the projected points for each day of the meet for this swimmer."""
-        with Path("schedule.json").open("r") as json_file:
+        with Path("cached_data.json").open("r") as json_file:
             data = json.load(json_file)
 
-        base_times = data.get("base_times")
-        string_keys_schedule = data.get("schedule", {})
+        base_times = data.get("base_times_data", {}).get("base_times", {})
+        string_keys_schedule = data.get("schedule_data", {}).get("schedule", {})
         schedule = {int(k): v for k, v in string_keys_schedule.items()}
 
         # Reset projected points for each day to 0
