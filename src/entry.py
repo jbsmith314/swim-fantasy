@@ -16,7 +16,7 @@ class Entry:
 
     def __repr__(self) -> str:
         """Return a string representation of the Entry object."""
-        return "Event: " + self.event + "\nTime: " + self.time + "\nSeed: " + self.seed + "\nProjected points: " + self.projected_points
+        return "Event: " + self.event + "\nTime: " + str(self.time) + "\nSeed: " + str(self.seed) + "\nProjected points: " + str(self.projected_points)
 
     def __lt__(self, other: Entry) -> bool:
         """

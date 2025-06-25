@@ -37,7 +37,7 @@ def main() -> None:
 
     # solve for optimal lineup for the given day
     solver = SingleDaySolver(parser.swimmers, DAY)
-    for _ in range(10):
+    for _ in range(200):
         __, captain = solver.solve()
         solver.exclude_swimmer(captain.name)
     # solver.exclude_entry("PONTI Noe", "Men's 100m Butterfly")
