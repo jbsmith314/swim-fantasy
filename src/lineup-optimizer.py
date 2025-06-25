@@ -7,6 +7,7 @@ from single_day_solver import SingleDaySolver
 
 NUM_EXPECTED_ARGS = 3
 DAY = 5
+NUM_LINEUPS = 100
 
 def check_valid_input() -> bool:
     """Check valid command line input to run the program."""
@@ -35,12 +36,12 @@ def main() -> None:
     parser.update_seeds()
     parser.update_projected_points()
 
-    # solve for optimal lineup for the given day
+    # solve for the top optimal lineups for the given day
     solver = SingleDaySolver(parser.swimmers, DAY)
-    for _ in range(200):
-        __, captain = solver.solve()
-        solver.exclude_swimmer(captain.name)
-    # solver.exclude_entry("PONTI Noe", "Men's 100m Butterfly")
+    for i in range(NUM_LINEUPS):
+        print(f"\nSolving for lineup {i + 1}...")
+        lineup, _ = solver.solve()
+        solver.exclude_lineup(lineup)
 
 
 if __name__ == "__main__":

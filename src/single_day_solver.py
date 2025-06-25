@@ -26,12 +26,11 @@ class SingleDaySolver:
         self.female_costs = []
         self.male_costs = []
 
-        self.num_females = 0
-        self.num_males = 0
-        self.solution_values = []
+        self.num_females: int = 0
+        self.num_males: int = 0
+        self.solution_values: list[float] = []
 
-        self.forbidden_swimmers = []
-        self.forbidden_lineups = []
+        self.forbidden_lineups: list[list[Swimmer]] = []
 
 
     def __repr__(self) -> str:
@@ -47,7 +46,7 @@ class SingleDaySolver:
         return self._get_optimal_lineup()
 
 
-    def exlude_lineup(self, lineup: list[Swimmer]) -> None:
+    def exclude_lineup(self, lineup: list[Swimmer]) -> None:
         """Exclude a specific lineup from being considered in the optimization."""
         if DEBUG:
             print(f"Excluding lineup: {[swimmer.name for swimmer in lineup]}")
@@ -143,6 +142,21 @@ class SingleDaySolver:
             budget_terms.append(swimmer.cost * male_vars[index])
 
         self.solver.Add(sum(budget_terms) <= BUDGET)
+
+        # Forbidden lineups constraints
+        for lineup in self.forbidden_lineups:
+            # Use names instead of Swimmer objects for checking in case entries are excluded
+            lineup_names = [swimmer.name for swimmer in lineup]
+
+            vars_in_lineup = []
+            for index, swimmer in enumerate(self.female_swimmers):
+                if swimmer.name in lineup_names:
+                    vars_in_lineup.append(female_vars[index])
+            for index, swimmer in enumerate(self.male_swimmers):
+                if swimmer.name in lineup_names:
+                    vars_in_lineup.append(male_vars[index])
+
+            self.solver.Add(sum(vars_in_lineup) <= ROSTER_SIZE - 1)
 
         # Number of females constraint
         self.solver.Add(sum(female_vars) <= ROSTER_SIZE // 2)
