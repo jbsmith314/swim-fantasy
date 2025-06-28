@@ -46,19 +46,20 @@ class SingleDaySolver:
         return self._get_optimal_lineup()
 
 
-    def exclude_lineup(self, lineup: list[Swimmer]) -> None:
+    def exclude_lineup(self, lineup: list[Swimmer], captain: Swimmer) -> None:
         """Exclude a specific lineup from being considered in the optimization."""
         if DEBUG:
             print(f"Excluding lineup: {[swimmer.name for swimmer in lineup]}")
-        self.forbidden_lineups.append(lineup)
+        self.forbidden_lineups.append((lineup, captain))
 
 
-    def include_lineup(self, lineup: list[Swimmer]) -> None:
+    def include_lineup(self, lineup: list[Swimmer], captain: Swimmer) -> None:
         """Include a specific lineup back into consideration."""
         if DEBUG:
             print(f"Including lineup: {[swimmer.name for swimmer in lineup]}")
-        if lineup in self.forbidden_lineups:
-            self.forbidden_lineups.remove(lineup)
+        # TODO: figure out if this doesn't work if a swimmer is modified after lineup is excluded and before it is included again
+        if (lineup, captain) in self.forbidden_lineups:
+            self.forbidden_lineups.remove((lineup, captain))
 
 
     def exclude_swimmer(self, swimmer_name: str) -> None:
@@ -125,12 +126,22 @@ class SingleDaySolver:
             var = self.solver.IntVar(0, 1, f"y{index + 1}")
             male_vars.append(var)
 
-        # Create objective function
+        female_captain_vars = []
+        for index in range(self.num_females):
+            var = self.solver.IntVar(0, 1, f"xc{index + 1}")
+            female_captain_vars.append(var)
+
+        male_captain_vars = []
+        for index in range(self.num_males):
+            var = self.solver.IntVar(0, 1, f"yc{index + 1}")
+            male_captain_vars.append(var)
+
+        # Create objective function - TODO: figure out how to factor in captain double points
         objective_terms = []
         for index, swimmer in enumerate(self.female_swimmers):
-            objective_terms.append(swimmer.projected_points[self.day - 1] * female_vars[index])
+            objective_terms.append(swimmer.projected_points[self.day - 1] * (female_vars[index] + female_captain_vars[index]))
         for index, swimmer in enumerate(self.male_swimmers):
-            objective_terms.append(swimmer.projected_points[self.day - 1] * male_vars[index])
+            objective_terms.append(swimmer.projected_points[self.day - 1] * (male_vars[index] + male_captain_vars[index]))
 
         self.solver.Maximize(sum(objective_terms))
 
@@ -144,7 +155,7 @@ class SingleDaySolver:
         self.solver.Add(sum(budget_terms) <= BUDGET)
 
         # Forbidden lineups constraints
-        for lineup in self.forbidden_lineups:
+        for lineup, captain in self.forbidden_lineups:
             # Use names instead of Swimmer objects for checking in case entries are excluded
             lineup_names = [swimmer.name for swimmer in lineup]
 
@@ -152,17 +163,26 @@ class SingleDaySolver:
             for index, swimmer in enumerate(self.female_swimmers):
                 if swimmer.name in lineup_names:
                     vars_in_lineup.append(female_vars[index])
+                    if swimmer.name == captain.name:
+                        vars_in_lineup.append(female_captain_vars[index])
             for index, swimmer in enumerate(self.male_swimmers):
                 if swimmer.name in lineup_names:
                     vars_in_lineup.append(male_vars[index])
+                    if swimmer.name == captain.name:
+                        vars_in_lineup.append(male_captain_vars[index])
 
-            self.solver.Add(sum(vars_in_lineup) <= ROSTER_SIZE - 1)
+            self.solver.Add(sum(vars_in_lineup) <= ROSTER_SIZE)
 
         # Number of females constraint
         self.solver.Add(sum(female_vars) <= ROSTER_SIZE // 2)
 
         # Number of males constraint
         self.solver.Add(sum(male_vars) <= ROSTER_SIZE // 2)
+
+        # Captain constraints (can't be captain if not in lineup)
+        for swimmer_var, captain_var in zip(female_vars + male_vars, female_captain_vars + male_captain_vars, strict=True):
+            self.solver.Add(captain_var <= swimmer_var)
+        self.solver.Add(sum(male_captain_vars + female_captain_vars) == 1)
 
         # Solve
         status = self.solver.Solve()
@@ -174,11 +194,10 @@ class SingleDaySolver:
 
         # Get solution values
         self.solution_values = []
-        for var in female_vars:
+        for var in female_vars + male_vars:
             self.solution_values.append(var.solution_value())
-        for var in male_vars:
+        for var in female_captain_vars + male_captain_vars:
             self.solution_values.append(var.solution_value())
-
 
     def _get_optimal_lineup(self) -> tuple[list[Swimmer], Swimmer]:
         indices = list(filter(lambda x: self.solution_values[x], range(self.num_females)))
@@ -188,10 +207,17 @@ class SingleDaySolver:
         lineup_male = [self.male_swimmers[x - self.num_females] for x in indices]
 
         lineup = lineup_female + lineup_male
-        captain = max(lineup, key=lambda x: x.projected_points[self.day - 1])
 
-        self._print_lineup(lineup, captain)
-        return lineup, captain
+        num_swimmers = self.num_females + self.num_males
+        captain_index = self.solution_values[num_swimmers: 2 * num_swimmers].index(1.0)
+
+        if captain_index < self.num_females:
+            captain = self.female_swimmers[captain_index]
+        else:
+            captain = self.male_swimmers[captain_index - self.num_females]
+
+        total_score = self._print_lineup(lineup, captain)
+        return lineup, captain, total_score
 
 
     def _print_lineup(self, lineup: list[Swimmer], captain: Swimmer) -> None:
@@ -202,7 +228,10 @@ class SingleDaySolver:
                 print(f" (Captain) ({int(swimmer.projected_points[self.day - 1] * 2)})")
             else:
                 print(f" ({int(swimmer.projected_points[self.day - 1])})")
-        print(f"With a total score of: {int(self.solver.Objective().Value() + captain.projected_points[self.day - 1])}")
+
+        total_score = int(self.solver.Objective().Value())
+        print(f"With a total score of: {total_score}")
+        return total_score
 
 
     def _get_male_swimmers(self) -> list[Swimmer]:
