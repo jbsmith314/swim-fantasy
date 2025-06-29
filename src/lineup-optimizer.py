@@ -9,7 +9,7 @@ from single_day_solver import SingleDaySolver
 NUM_EXPECTED_ARGS = 3 # Expected number of command line arguments
 DAY = 5 # Day for the single day solver to solve for
 NUM_DAYS = 6 # Number of days in the meet
-NUM_LINEUPS = 25 # Number of lineups to generate for the single day solver
+NUM_LINEUPS = 1 # Number of lineups to generate for the single day solver
 
 def check_valid_input() -> bool:
     """Check valid command line input to run the program."""
@@ -29,19 +29,20 @@ def check_valid_input() -> bool:
 
 def test_single_day_solver(parser: DataParser) -> None:
     """Test the single day solver."""
-    solver = SingleDaySolver(parser.swimmers, DAY)
+    for day in range(6):
+        solver = SingleDaySolver(parser.swimmers, day + 1)
 
-    # number larger than any possible score
-    prev_score = 99999
+        # number larger than any possible score
+        prev_score = 99999
 
-    # get the NUM_LINEUPS top lineups
-    for i in range(NUM_LINEUPS):
-        print(f"\nSolving for lineup {i + 1}...")
-        lineup, captain, curr_score = solver.solve()
-        solver.exclude_lineup(lineup, captain)
-        if i > 0 and curr_score > prev_score:
-            sys.exit("Optimal lineup score decreased, so something is wrong. Stopping early.")
-        prev_score = curr_score
+        # get the NUM_LINEUPS top lineups
+        for i in range(NUM_LINEUPS):
+            # TODO: use NextSolution method
+            print(f"\nSolving for lineup {i + 1}...")
+            lineup, captain, curr_score = solver.solve()
+            if i > 0 and curr_score > prev_score:
+                sys.exit("Optimal lineup score decreased, so something is wrong. Stopping early.")
+            prev_score = curr_score
 
 
 def test_full_meet_solver(parser: DataParser) -> None:
@@ -62,6 +63,7 @@ def main() -> None:
     parser.update_projected_points()
 
     test_full_meet_solver(parser)
+    test_single_day_solver(parser)
 
 
 if __name__ == "__main__":

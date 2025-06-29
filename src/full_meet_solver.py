@@ -10,7 +10,7 @@ ROSTER_SIZE = 8
 BUDGET = 200
 CREDITS = 800
 ADDITIONAL_CREDITS = 150
-SWITCH_COST = 50
+SWITCH_COST = 1
 SWITCHES = (CREDITS + ADDITIONAL_CREDITS) // SWITCH_COST
 
 class FullMeetSolver:
@@ -211,7 +211,7 @@ class FullMeetSolver:
 
     def _print_solution(self) -> None:
         """Print the optimal lineups for each day of the meet."""
-        print()
+        print(self.solution_values)
         for day, day_solution_values in enumerate(self.solution_values["swimmer_decision_vars"]):
             print(f"Day {day + 1} lineup:")
             female_indices = list(filter(lambda x: day_solution_values[x], range(self.num_females)))
@@ -234,7 +234,7 @@ class FullMeetSolver:
                 else:
                     print(f"{swimmer.name} ({swimmer.projected_points[day]})")
                     total_points += swimmer.projected_points[day]
-            print(f"Day {day} total: {total_points}\n")
+            print(f"Day {day + 1} total: {total_points}\n")
 
         print(f"Grand total: {int(self.solver.Objective().Value())} points")
         print(f"Switches used: {sum(self.solution_values['day_switch_counts'])} / {SWITCHES}\n")
