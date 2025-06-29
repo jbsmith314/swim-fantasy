@@ -71,7 +71,7 @@ class FullMeetSolver:
         for day in range(self.num_days):
             day_vars = []
             for index in range(self.num_females):
-                var = self.solver.IntVar(0, 1, f"day_{day + 1}_female_{index + 1}")
+                var = self.solver.BoolVar(f"day_{day + 1}_female_{index + 1}")
                 day_vars.append(var)
             female_vars.append(day_vars)
 
@@ -80,7 +80,7 @@ class FullMeetSolver:
         for day in range(self.num_days):
             day_vars = []
             for index in range(self.num_males):
-                var = self.solver.IntVar(0, 1, f"day_{day + 1}_male_{index + 1}")
+                var = self.solver.BoolVar(f"day_{day + 1}_male_{index + 1}")
                 day_vars.append(var)
             male_vars.append(day_vars)
 
@@ -89,7 +89,7 @@ class FullMeetSolver:
         for day in range(self.num_days):
             day_vars = []
             for index in range(self.num_females):
-                var = self.solver.IntVar(0, 1, f"day_{day + 1}_female_captain_{index + 1}")
+                var = self.solver.BoolVar(f"day_{day + 1}_female_captain_{index + 1}")
                 day_vars.append(var)
             female_captain_vars.append(day_vars)
 
@@ -98,7 +98,7 @@ class FullMeetSolver:
         for day in range(self.num_days):
             day_vars = []
             for index in range(self.num_males):
-                var = self.solver.IntVar(0, 1, f"day_{day + 1}_male_captain_{index + 1}")
+                var = self.solver.BoolVar(f"day_{day + 1}_male_captain_{index + 1}")
                 day_vars.append(var)
             male_captain_vars.append(day_vars)
 
@@ -107,17 +107,18 @@ class FullMeetSolver:
         for day in range(1, self.num_days):
             day_vars = []
             for index in range(self.num_females):
-                var = self.solver.IntVar(0, 1, f"day_{day + 1}_switch_female_{index + 1}")
+                var = self.solver.BoolVar(f"day_{day + 1}_switch_female_{index + 1}")
                 day_vars.append(var)
             for index in range(self.num_males):
-                var = self.solver.IntVar(0, 1, f"day_{day + 1}_switch_male_{index + 1}")
+                var = self.solver.BoolVar(f"day_{day + 1}_switch_male_{index + 1}")
                 day_vars.append(var)
             switch_vars.append(day_vars)
 
         # Declare fake decision variables for number of switches per day to make constraints easier
+        # Can be up to ROSTER_SIZE * 2 switches per day because switches are double counted
         day_switch_counts = []
         for day in range(1, self.num_days):
-            var = self.solver.IntVar(0, ROSTER_SIZE, f"day_{day + 1}_num_switches")
+            var = self.solver.IntVar(0, ROSTER_SIZE * 2, f"day_{day + 1}_num_switches")
             day_switch_counts.append(var)
 
         # Create objective function - only need to change this now (will have to add more variables too)
@@ -211,7 +212,7 @@ class FullMeetSolver:
 
     def _print_solution(self) -> None:
         """Print the optimal lineups for each day of the meet."""
-        print(self.solution_values)
+        print()
         for day, day_solution_values in enumerate(self.solution_values["swimmer_decision_vars"]):
             print(f"Day {day + 1} lineup:")
             female_indices = list(filter(lambda x: day_solution_values[x], range(self.num_females)))

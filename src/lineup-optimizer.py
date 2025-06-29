@@ -62,8 +62,8 @@ def main() -> None:
     parser.update_seeds()
     parser.update_projected_points()
 
-    test_full_meet_solver(parser)
     test_single_day_solver(parser)
+    test_full_meet_solver(parser)
 
 
 if __name__ == "__main__":
