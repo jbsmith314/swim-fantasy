@@ -174,10 +174,10 @@ class SingleDaySolver:
             self.solver.Add(sum(vars_in_lineup) <= ROSTER_SIZE)
 
         # Number of females constraint
-        self.solver.Add(sum(female_vars) <= ROSTER_SIZE // 2)
+        self.solver.Add(sum(female_vars) == ROSTER_SIZE // 2)
 
         # Number of males constraint
-        self.solver.Add(sum(male_vars) <= ROSTER_SIZE // 2)
+        self.solver.Add(sum(male_vars) == ROSTER_SIZE // 2)
 
         # Captain constraints (can't be captain if not in lineup)
         for swimmer_var, captain_var in zip(female_vars + male_vars, female_captain_vars + male_captain_vars, strict=True):
