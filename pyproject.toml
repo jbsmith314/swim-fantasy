@@ -18,11 +18,15 @@ dependencies = [
 [tool.ruff]
 lint.extend-select = ["ALL"]
 lint.ignore = [
-    "D203",   # Use a single blank line after a function or class docstring
-    "D212",   # Have text on the first line of a multiline docstring
-    "E501",   # Line too long
-    "FIX002", # Line contains a TODO comment
-    "TD002",  # Missing author in TODO
-    "TD003",  # Missing issue link for this TODO
-    "T201",   # Used a print statement (don't use print statements in production code)
+    "C901",    # Function is too complex"
+    "PLR0912", # Too many branches
+    "PLR0915", # Too many statements
+
+    "D203",    # Use a single blank line after a function or class docstring
+    "D212",    # Have text on the first line of a multiline docstring
+    "E501",    # Line too long
+    "FIX002",  # Line contains a TODO comment
+    "TD002",   # Missing author in TODO
+    "TD003",   # Missing issue link for this TODO
+    "T201",    # Used a print statement (don't use print statements in production code)
 ]

@@ -11,6 +11,11 @@ DAY = 5 # Day for the single day solver to solve for
 NUM_DAYS = 6 # Number of days in the meet
 NUM_LINEUPS = 1 # Number of lineups to generate for the single day solver
 
+CREDITS = 800
+ADDITIONAL_CREDITS = 150
+SWITCH_COST = 1
+SWITCHES = (CREDITS + ADDITIONAL_CREDITS) // SWITCH_COST
+
 def check_valid_input() -> bool:
     """Check valid command line input to run the program."""
     if len(sys.argv) != NUM_EXPECTED_ARGS:
@@ -47,8 +52,10 @@ def test_single_day_solver(parser: DataParser) -> None:
 
 def test_full_meet_solver(parser: DataParser) -> None:
     """Test the full meet solver."""
-    solver = FullMeetSolver(parser.swimmers, NUM_DAYS)
-    solver.solve()
+    for num_days in range(1, NUM_DAYS + 1):
+        for day in range(NUM_DAYS - num_days + 1):
+            solver = FullMeetSolver(parser.swimmers, SWITCHES, day + 1, day + num_days)
+            solver.solve()
 
 
 def main() -> None:
@@ -62,7 +69,6 @@ def main() -> None:
     parser.update_seeds()
     parser.update_projected_points()
 
-    test_single_day_solver(parser)
     test_full_meet_solver(parser)
 
 

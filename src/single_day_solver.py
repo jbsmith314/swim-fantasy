@@ -225,7 +225,7 @@ class SingleDaySolver:
         for swimmer in lineup:
             print(f"{swimmer.name}", end="")
             if swimmer is captain:
-                print(f" (Captain) ({int(swimmer.projected_points[self.day - 1] * 2)})")
+                print(f" ({int(swimmer.projected_points[self.day - 1] * 2)}) (---------- Captain ----------)")
             else:
                 print(f" ({int(swimmer.projected_points[self.day - 1])})")
 
