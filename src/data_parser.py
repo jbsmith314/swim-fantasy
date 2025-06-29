@@ -81,7 +81,7 @@ class DataParser:
                     "base_times": self.base_times,
                 },
             }
-            json.dump(schedule_data, json_file)
+            json.dump(schedule_data, json_file, indent=4)
 
 
     def get_base_times(self, base_times_filename: str) -> dict:
