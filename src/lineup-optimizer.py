@@ -65,12 +65,15 @@ def main() -> None:
     # parse data from schedule, psych sheet, and base times
     parser = DataParser()
     parser.get_all_data()
+
+    # Takes about 2 seconds
     parser.create_swimmers()
+
     parser.update_seeds()
     parser.update_projected_points()
 
+    # Takes majority of time
     test_full_meet_solver(parser)
-
 
 if __name__ == "__main__":
     main()

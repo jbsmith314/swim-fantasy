@@ -27,9 +27,30 @@ class Swimmer:
         self.sex = None
         self.cost = 25
 
+
     def __repr__(self) -> str:
         """Give string representation of the swimmer."""
         return "Name: " + self.name + "\nCountry: " + self.country + "\nBirthday: " + self.birthday + "\nHeight: " + str(self.height)
+
+
+    def __eq__(self, other: Swimmer) -> bool:
+        """Check equality by name."""
+        if not isinstance(other, Swimmer):
+            return NotImplemented
+
+        if self.name != other.name:
+            return False
+
+        if self.name == other.name and self.entries != other.entries:
+            print("WARNING: Swimmers with the same name have different entries.")
+
+        return True
+
+
+    def __hash__(self) -> int:
+        """Hash the swimmer by name."""
+        return hash(self.name)
+
 
     def add_event(self, entry: str) -> None:
         """

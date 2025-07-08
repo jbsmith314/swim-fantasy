@@ -1,6 +1,7 @@
 """A class to solve the mixed integer program for a single day of a swim meet."""
 
 import sys
+import time
 
 from ortools.linear_solver import pywraplp
 
@@ -45,7 +46,6 @@ class FullMeetSolver:
 
         self._get_data()
         self._get_solution()
-        self._print_solution()
 
 
     def _check_valid_day_range(self, start_day: int, end_day: int) -> tuple[int, int]:
@@ -195,8 +195,11 @@ class FullMeetSolver:
                 self.solver.Add(z <= x + y)
                 self.solver.Add(z <= 2 - (x + y))
 
+        time1 = time.time()
         # Solve
         status = self.solver.Solve()
+        time2 = time.time()
+        print(f"MIP for day(s) {self.start_day} to {self.start_day} solved in {time2 - time1:.4f} seconds")
 
         # Check that solver worked
         if status != pywraplp.Solver.OPTIMAL:
@@ -223,8 +226,49 @@ class FullMeetSolver:
 
         self.solution_values["day_switch_counts"] = [int(var.solution_value() / 2) for var in day_switch_counts]
 
+        return self._format_solution()
 
-    def _print_solution(self) -> None:
+
+    def _format_solution(self) -> dict[str, list]:
+        """Format the solution values into a dictionary."""
+        solution = {}
+        total_points = 0
+        total_switches = 0
+        for day, day_solution_values in zip(range(self.start_day, self.end_day + 1), self.solution_values["swimmer_decision_vars"], strict=True):
+            female_indices = list(filter(lambda x: day_solution_values[x], range(self.num_females)))
+            female_swimmers = [self.female_swimmers[x] for x in female_indices]
+            male_indices = list(filter(lambda x: day_solution_values[x], range(self.num_females, self.num_females + self.num_males)))
+            male_swimmers = [self.male_swimmers[x - self.num_females] for x in male_indices]
+            solution[f"Day {day}"] = {
+                "female_swimmers": female_swimmers,
+                "male_swimmers": male_swimmers,
+            }
+
+            total_points = 0
+            for swimmer in female_swimmers:
+                if self.solution_values["captain_decision_vars"][day - self.start_day][self.female_swimmers.index(swimmer)]:
+                    captain = swimmer
+                    solution[f"Day {day}"]["Captain"] = swimmer
+            for swimmer in male_swimmers:
+                if self.solution_values["captain_decision_vars"][day - self.start_day][self.male_swimmers.index(swimmer) + self.num_females]:
+                    captain = swimmer
+                    solution[f"Day {day}"]["Captain"] = swimmer
+
+            day_points_total = sum([swimmer.projected_points[day - 1] * (2 if swimmer == captain else 1) for swimmer in female_swimmers + male_swimmers])
+            total_points += day_points_total
+            day_switches_used = sum(self.solution_values["day_switch_counts"])
+            total_switches += day_switches_used
+            solution[f"Day {day}"]["total_points"] = day_points_total
+            solution[f"Day {day}"]["total_switches"] = day_switches_used
+
+        solution["Grand Total"] = {
+            "total_points": total_points,
+            "total_switches": total_switches,
+        }
+
+
+
+    def print_solution(self) -> None:
         """Print the optimal lineups for each day of the meet."""
         print()
         for day, day_solution_values in zip(range(self.start_day, self.end_day + 1), self.solution_values["swimmer_decision_vars"], strict=True):
