@@ -1,4 +1,7 @@
+"""Database script for swimming world records."""
+
 import sqlite3
+
 
 def main() -> None:
     """Run the database script."""
