@@ -1,31 +1,24 @@
-"""
-Get world records from online.
+"""Get world records from online."""
 
-To Do:
-Spell out circumstances - Legend:
-# -> Record awaiting ratification by FINA;
-h -> heat;
-sf -> semifinal;
-r -> relay 1st leg;
-rh -> relay heat 1st leg;
-b -> B final;
-† -> en route to final mark;
-tt -> time trial
-"""
-
+import re
 import sqlite3
+import time
 
+import matplotlib.pyplot as plt
 import requests
 from bs4 import BeautifulSoup
 
 EXPECTED_COLS = 9
 MINIMUM_TIME_LENGTH = 5
+MAXIMUM_TIME_LENGTH = 8
+EXPECTED_DATE_TOKENS = 3  # day, month, year
 
 def add_to_db(rows: list[dict]) -> None:
     """Add world records to the database."""
     conn = sqlite3.connect("swimming.db")
     cursor = conn.cursor()
 
+    cursor.execute("""DROP TABLE IF EXISTS world_records""")
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS world_records (
             id INTEGER PRIMARY KEY,
@@ -45,14 +38,17 @@ def add_to_db(rows: list[dict]) -> None:
             relay BOOLEAN,
             b_final BOOLEAN,
             race_split BOOLEAN,
-            time_trial BOOLEAN
+            time_trial BOOLEAN,
+            raw_circumstances TEXT,
+            date_num INTEGER,
+            time_in_seconds REAL
         )
     """)
 
     for row in rows:
         cursor.execute("""
-            INSERT INTO world_records (sex, stroke, distance, course, time, swimmer, country, date, meet, location, awaiting_ratification, heat, semifinal, relay, b_final, race_split, time_trial)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO world_records (sex, stroke, distance, course, time, swimmer, country, date, meet, location, awaiting_ratification, heat, semifinal, relay, b_final, race_split, time_trial, raw_circumstances, date_num, time_in_seconds)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             row["sex"],
             row["stroke"],
@@ -71,9 +67,12 @@ def add_to_db(rows: list[dict]) -> None:
             row["b_final"],
             row["race_split"],
             row["time_trial"],
+            row["raw_circumstances"],
+            row["date_num"],
+            row["time_in_seconds"],
         ))
 
-    print(f"Added {len(rows)} world records to the database.")
+    print(f"Added {len(rows)} world records to database.")
     conn.commit()
     conn.close()
 
@@ -127,7 +126,7 @@ def get_wrs(url: str) -> list[dict]:
                 swimmer = swimmer[len(swimmer) // 2 + 1:] # Remove duplicate swimmer name
                 country = row.find("span", class_="flagicon").find("a")["title"] # Convert flag icon to country name
 
-            meet = "Unknown" if meet in ["-", "?"] else meet
+            meet = "Unknown" if meet in ["-", "?", "–", ""] else meet # Third character is en dash, not a hyphen
 
             if swimmer == "?":
                 continue
@@ -140,6 +139,57 @@ def get_wrs(url: str) -> list[dict]:
             b_final = "b" in circumstances
             race_split = "†" in circumstances
             time_trial = "tt" in circumstances
+
+            # Missing yd (800 free), [a], [b], [c], [d] (all 200 breast), [A] (400 free), = (equaled previous WR), [2] (Peter Williams 50 free), and * (Bernard 100 free) for circumstances
+
+            if "," in date:
+                month, day, year = date.replace(",", "").split(" ")
+                date = f"{day} {month} {year}"
+            else:
+                day, month, year = date.split(" ")
+
+            month_to_num = {
+                "Jan": "01",
+                "January": "01",
+                "Feb": "02",
+                "February": "02",
+                "Mar": "03",
+                "March": "03",
+                "Apr": "04",
+                "April": "04",
+                "May": "05",
+                "Jun": "06",
+                "June": "06",
+                "Jul": "07",
+                "July": "07",
+                "Aug": "08",
+                "August": "08",
+                "Sep": "09",
+                "September": "09",
+                "Oct": "10",
+                "October": "10",
+                "Nov": "11",
+                "November": "11",
+                "Dec": "12",
+                "December": "12",
+            }
+
+            date_num = int(year) * 10000 + int(month_to_num[month]) * 100 + int(day)
+
+            if len(time) == 0:
+                time_in_seconds = 0
+
+            # TODO: deal with = after the time
+            accurate_time = (time + "0" if time[-2] == "." else time).rstrip("= ")
+            if len(accurate_time) == MINIMUM_TIME_LENGTH:
+                seconds, hundreths = accurate_time.split(".")
+                time_in_seconds = int(seconds) + int(hundreths) / 100
+            elif len(accurate_time) in [MAXIMUM_TIME_LENGTH - 1, MAXIMUM_TIME_LENGTH]:
+                minutes, seconds, hundreths = re.split("[:.]", accurate_time)
+                time_in_seconds = int(minutes) * 60 + int(seconds) + int(hundreths) / 100
+            elif len(time) > 0:
+                msg = f"Unexpected time format: {time} (length: {len(time)})"
+                raise ValueError(msg)
 
             row_data = {
                 "sex": sex,
@@ -159,22 +209,65 @@ def get_wrs(url: str) -> list[dict]:
                 "b_final": b_final,
                 "race_split": race_split,
                 "time_trial": time_trial,
+                "raw_circumstances": circumstance,
+                "date_num": date_num,
+                "time_in_seconds": time_in_seconds,
             }
             rows.append(row_data)
 
     return rows
 
 
-def main() -> None:
+def update_db() -> None:
     """Get world records."""
+    print("Fetching world records...\n")
+    start = time.time()
+
     wr_pages = get_wr_pages()
     wrs = []
     for url in wr_pages:  # Limit to first two pages for testing
+        url_start_len = len("https://en.wikipedia.org//wiki/World_record_progression_")
+        print(f"Fetching records for {" ".join(url[url_start_len:].split('_')).replace('metres', 'meter')}...")
         wrs.extend(get_wrs(url))
 
-    print(f"World records found: {len(wrs)}")
+    end = time.time()
+    print(f"\nFetched {len(wrs)} world records in {end - start:.2f} seconds.")
 
     add_to_db(wrs)
+
+
+def main() -> None:
+    """Control flow of program."""
+    update_db()
+
+    # conn = sqlite3.connect("swimming.db")
+    # cursor = conn.cursor()
+
+    # wr_counts = []
+    # for year in range(2000, 2025):
+    #     cursor.execute(f"""SELECT
+    #                     COUNT(*)
+    #                     FROM world_records
+    #                     WHERE
+    #                         date_num >= {year}0101 AND
+    #                         date_num <= {year}1231 AND
+    #                     course = 'LCM'""")
+    #     count = cursor.fetchone()[0]
+    #     wr_counts.append(count)
+
+    # for count in wr_counts:
+    #     print(count)
+
+    # conn.close()
+
+    # # plot results
+    # x_data = range(2000, 2025)
+    # y_data = wr_counts
+    # plt.plot(x_data, y_data)
+    # plt.xlabel("Year")
+    # plt.ylabel("World Record Count")
+    # plt.title("LCM World Record Counts (2000-2024)")
+    # plt.show()
 
 if __name__ == "__main__":
     main()
