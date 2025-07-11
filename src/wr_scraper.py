@@ -1,5 +1,6 @@
 """Get world records from online."""
 
+import datetime
 import re
 import sqlite3
 import time
@@ -12,6 +13,7 @@ EXPECTED_COLS = 9
 MINIMUM_TIME_LENGTH = 5
 MAXIMUM_TIME_LENGTH = 8
 EXPECTED_DATE_TOKENS = 3  # day, month, year
+SECONDS_PER_MINUTE = 60
 
 def add_to_db(rows: list[dict]) -> None:
     """Add world records to the database."""
@@ -236,38 +238,97 @@ def update_db() -> None:
     add_to_db(wrs)
 
 
+def wr_counts_by_year() -> None:
+    """Get world record counts by year."""
+    conn = sqlite3.connect("swimming.db")
+    cursor = conn.cursor()
+
+    wr_counts = []
+    for year in range(2000, 2025):
+        cursor.execute(f"""SELECT
+                        COUNT(*)
+                        FROM world_records
+                        WHERE
+                            date_num >= {year}0101 AND
+                            date_num <= {year}1231 AND
+                        course = 'LCM'""")
+        count = cursor.fetchone()[0]
+        wr_counts.append(count)
+
+    for count in wr_counts:
+        print(count)
+
+    conn.close()
+
+    # plot results
+    start_year = 2000
+    end_year = 2024
+    x_data = range(start_year, end_year + 1)
+    y_data = wr_counts
+    plt.plot(x_data, y_data)
+    plt.xlabel("Year")
+    plt.ylabel("World Record Count")
+    plt.title(f"LCM World Record Counts ({start_year}-{end_year})")
+    plt.show()
+
+
+def seconds_to_time_str(seconds: float) -> str:
+    """Convert seconds to time string."""
+    if seconds >= SECONDS_PER_MINUTE:
+        minutes = int(seconds // SECONDS_PER_MINUTE)
+        seconds = seconds % SECONDS_PER_MINUTE
+        return f"{minutes}:{seconds:05.2f}"
+
+    return f"{seconds:05.2f}"
+
+
+def get_base_times(year: int, course: str) -> dict[str, float]:
+    """Get base times for each event for a given year."""
+    conn = sqlite3.connect("swimming.db")
+    cursor = conn.cursor()
+
+    if course not in ["LCM", "SCM"]:
+        msg = f"Unexpected course: {course}"
+        raise ValueError(msg)
+
+    month = "08"
+    adjusted_year = year
+    if course == "LCM":
+        month = "12"
+        adjusted_year -= 1
+
+    today = datetime.datetime.now(tz=datetime.UTC).date()
+    if today.year * 10000 + today.month * 100 + today.day < adjusted_year * 10000 + int(month) * 100 + 31:
+        msg = f"The {year} {course} base times are not available yet. They will be available after {adjusted_year}-{month}-31."
+        raise ValueError(msg)
+
+    base_times = {}
+    cursor.execute(f"""SELECT
+                    sex,
+                    stroke,
+                    distance,
+                    MIN(time_in_seconds)
+                    FROM world_records
+                    WHERE
+                        date_num <= {adjusted_year}{month}31 AND
+                    course = '{course}'
+                    GROUP BY sex, stroke, distance""")
+    results = cursor.fetchall()
+    for sex, stroke, distance, time_in_seconds in results:
+        event = f"{sex}'s {distance}m {stroke}"
+        base_times[event] = time_in_seconds
+
+    conn.close()
+    return base_times
+
+
 def main() -> None:
     """Control flow of program."""
-    update_db()
+    # update_db()
 
-    # conn = sqlite3.connect("swimming.db")
-    # cursor = conn.cursor()
+    # wr_counts_by_year()
 
-    # wr_counts = []
-    # for year in range(2000, 2025):
-    #     cursor.execute(f"""SELECT
-    #                     COUNT(*)
-    #                     FROM world_records
-    #                     WHERE
-    #                         date_num >= {year}0101 AND
-    #                         date_num <= {year}1231 AND
-    #                     course = 'LCM'""")
-    #     count = cursor.fetchone()[0]
-    #     wr_counts.append(count)
-
-    # for count in wr_counts:
-    #     print(count)
-
-    # conn.close()
-
-    # # plot results
-    # x_data = range(2000, 2025)
-    # y_data = wr_counts
-    # plt.plot(x_data, y_data)
-    # plt.xlabel("Year")
-    # plt.ylabel("World Record Count")
-    # plt.title("LCM World Record Counts (2000-2024)")
-    # plt.show()
+    get_base_times(2026, "SCM")
 
 if __name__ == "__main__":
     main()

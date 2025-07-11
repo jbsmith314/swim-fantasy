@@ -22,6 +22,7 @@ dependencies = [
 lint.extend-select = ["ALL"]
 lint.ignore = [
     "C901",    # Function is too complex"
+    "ERA001",  # Commented out code
     "PLR0912", # Too many branches
     "PLR0915", # Too many statements
 
@@ -29,6 +30,7 @@ lint.ignore = [
     "D212",    # Have text on the first line of a multiline docstring
     "E501",    # Line too long
     "FIX002",  # Line contains a TODO comment
+    "S608",    # Constructing SQL queries using f-strings
     "TD002",   # Missing author in TODO
     "TD003",   # Missing issue link for this TODO
     "T201",    # Used a print statement (don't use print statements in production code)
