@@ -35,3 +35,6 @@ lint.ignore = [
     "TD003",   # Missing issue link for this TODO
     "T201",    # Used a print statement (don't use print statements in production code)
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"wr_scraper.py" = ["RUF001"] # Warns against use of en dash, but it is intended in this case

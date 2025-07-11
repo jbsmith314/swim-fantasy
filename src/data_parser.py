@@ -31,7 +31,6 @@ class DataParser:
 
     def get_all_data(self) -> None:
         """Get all data needed for the lineup optimizer."""
-        base_times_filename = sys.argv[2]
         try:
             with CACHE_FILE_PATH.open("r") as file:
                 data = json.load(file)
@@ -55,19 +54,6 @@ class DataParser:
 
             self.get_schedule(SCHEDULE_URL)
 
-        # ---------------------------------------- Get base times ----------------------------------------
-        # If the base times filename matches the cached one, use the cached base times, otherwise, fetch new base times
-        if data.get("base_times_data", {}).get("base_times_filename", "") == base_times_filename:
-            print("Using cached base times.")
-            # Get cached base times
-            self.base_times = data.get("base_times_data", {}).get("base_times", {})
-        else:
-            if data.get("base_times_data", {}).get("base_times_filename", ""):
-                print("Base times filename has changed. Extracting new base times.")
-            else:
-                print("No cached base times found. Extracting new base times.")
-
-            self.get_base_times(base_times_filename)
 
         # -------------------------------- Update cache file --------------------------------
         with CACHE_FILE_PATH.open("w") as json_file:
@@ -76,35 +62,8 @@ class DataParser:
                     "schedule": self.schedule,
                     "schedule_url": SCHEDULE_URL,
                 },
-                "base_times_data": {
-                    "base_times_filename": base_times_filename,
-                    "base_times": self.base_times,
-                },
             }
             json.dump(schedule_data, json_file, indent=4)
-
-
-    def get_base_times(self, base_times_filename: str) -> dict:
-        """
-        Get the base times from the base times file.
-
-        Keyword Arguments:
-            base_times_filename: the filename of the base times file
-
-        """
-        lines = self._get_text(base_times_filename).split("\n")
-        filtered_lines = [line for line in lines if line and line.split()[0][-1] == "m" and "Relay" not in line]
-
-        base_times = {}
-        for line in filtered_lines:
-            event = " ".join(line.split()[:-4])
-            women_event_name = self._format_event_name("Women's " + event)
-            base_times[women_event_name] = float(line.split()[-1])
-            men_event_name = self._format_event_name("Men's " + event)
-            base_times[men_event_name] = float(line.split()[-3])
-
-        self.base_times = base_times
-        return base_times
 
 
     def get_schedule(self, schedule_url: str) -> dict:

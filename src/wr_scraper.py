@@ -4,6 +4,7 @@ import datetime
 import re
 import sqlite3
 import time
+from functools import cache
 
 import matplotlib.pyplot as plt
 import requests
@@ -13,7 +14,6 @@ EXPECTED_COLS = 9
 MINIMUM_TIME_LENGTH = 5
 MAXIMUM_TIME_LENGTH = 8
 EXPECTED_DATE_TOKENS = 3  # day, month, year
-SECONDS_PER_MINUTE = 60
 
 def add_to_db(rows: list[dict]) -> None:
     """Add world records to the database."""
@@ -271,18 +271,8 @@ def wr_counts_by_year() -> None:
     plt.title(f"LCM World Record Counts ({start_year}-{end_year})")
     plt.show()
 
-
-def seconds_to_time_str(seconds: float) -> str:
-    """Convert seconds to time string."""
-    if seconds >= SECONDS_PER_MINUTE:
-        minutes = int(seconds // SECONDS_PER_MINUTE)
-        seconds = seconds % SECONDS_PER_MINUTE
-        return f"{minutes}:{seconds:05.2f}"
-
-    return f"{seconds:05.2f}"
-
-
-def get_base_times(year: int, course: str) -> dict[str, float]:
+@cache
+def get_base_times_from_db(year: int, course: str) -> dict[str, float]:
     """Get base times for each event for a given year."""
     conn = sqlite3.connect("swimming.db")
     cursor = conn.cursor()
@@ -301,6 +291,10 @@ def get_base_times(year: int, course: str) -> dict[str, float]:
     if today.year * 10000 + today.month * 100 + today.day < adjusted_year * 10000 + int(month) * 100 + 31:
         msg = f"The {year} {course} base times are not available yet. They will be available after {adjusted_year}-{month}-31."
         raise ValueError(msg)
+
+    valid_start = f"{(int(month) + 1) % 12:02}-01-{adjusted_year + (course == 'LCM')}"
+    valid_end = f"{month}-31-{adjusted_year + 1}"
+    print(f"Fetching {year} {course} base times... (valid from {valid_start} to {valid_end})")
 
     base_times = {}
     cursor.execute(f"""SELECT
@@ -328,7 +322,7 @@ def main() -> None:
 
     # wr_counts_by_year()
 
-    get_base_times(2026, "SCM")
+    get_base_times_from_db(2024, "SCM")
 
 if __name__ == "__main__":
     main()

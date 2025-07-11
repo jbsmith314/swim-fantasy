@@ -7,6 +7,7 @@ import math
 from pathlib import Path
 
 from entry import Entry
+from wr_scraper import get_base_times_from_db
 
 FIVE = 5
 
@@ -106,7 +107,8 @@ class Swimmer:
         with Path("cached_data.json").open("r") as json_file:
             data = json.load(json_file)
 
-        base_times = data.get("base_times_data", {}).get("base_times", {})
+        # TODO: Make this not have hard coded year and course, and not have to fetch every time (@lrucache?)
+        base_times = get_base_times_from_db(2024, "SCM")
         string_keys_schedule = data.get("schedule_data", {}).get("schedule", {})
         schedule = {int(k): v for k, v in string_keys_schedule.items()}
 

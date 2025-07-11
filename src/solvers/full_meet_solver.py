@@ -199,7 +199,10 @@ class FullMeetSolver:
         # Solve
         status = self.solver.Solve()
         time2 = time.time()
-        print(f"MIP for day(s) {self.start_day} to {self.start_day} solved in {time2 - time1:.4f} seconds")
+        if self.start_day != self.end_day:
+            print(f"MIP for day {self.start_day} to day {self.end_day} solved in {time2 - time1:.4f} seconds")
+        else:
+            print(f"MIP for day {self.start_day} solved in {time2 - time1:.4f} seconds")
 
         # Check that solver worked
         if status != pywraplp.Solver.OPTIMAL:

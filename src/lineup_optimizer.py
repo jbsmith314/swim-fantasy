@@ -3,10 +3,10 @@
 import sys
 
 from data_parser import DataParser
-from full_meet_solver import FullMeetSolver
-from single_day_solver import SingleDaySolver
+from solvers.full_meet_solver import FullMeetSolver
+from solvers.single_day_solver import SingleDaySolver
 
-NUM_EXPECTED_ARGS = 3 # Expected number of command line arguments
+NUM_EXPECTED_ARGS = 2 # Expected number of command line arguments
 DAY = 5 # Day for the single day solver to solve for
 NUM_DAYS = 6 # Number of days in the meet
 NUM_LINEUPS = 1 # Number of lineups to generate for the single day solver
@@ -19,15 +19,11 @@ SWITCHES = (CREDITS + ADDITIONAL_CREDITS) // SWITCH_COST
 def check_valid_input() -> bool:
     """Check valid command line input to run the program."""
     if len(sys.argv) != NUM_EXPECTED_ARGS:
-        sys.exit("This program takes two additional arguments.\nExample input: uv run .\\src\\lineup-optimizer.py .\\PsychSheets\\2024-scm-worlds-psych-sheet.pdf .\\BaseTimes\\2023-2024-scm-base-times.pdf")
+        sys.exit(f"This program takes two additional arguments.\nExample input: uv run .\\src\\{__file__} .\\PsychSheets\\2024-scm-worlds-psych-sheet.pdf")
 
     psych_sheet = sys.argv[1]
     if psych_sheet[-4:] != ".pdf":
-        sys.exit("Psych sheet file must be a PDF.\nExample input: uv run .\\src\\lineup-optimizer.py .\\PsychSheets\\2024-scm-worlds-psych-sheet.pdf .\\BaseTimes\\2023-2024-scm-base-times.pdf")
-
-    base_times = sys.argv[2]
-    if base_times[-4:] != ".pdf":
-        sys.exit("Base times file must be a PDF.\nExample input: uv run .\\src\\lineup-optimizer.py .\\PsychSheets\\2024-scm-worlds-psych-sheet.pdf .\\BaseTimes\\2023-2024-scm-base-times.pdf")
+        sys.exit(f"Psych sheet file must be a PDF.\nExample input: uv run .\\src\\{__file__} .\\PsychSheets\\2024-scm-worlds-psych-sheet.pdf")
 
     return True
 
