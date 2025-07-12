@@ -1,5 +1,5 @@
 TODO:
-* Add more psych sheet documents, along with schedule URLs to test on other meets
+* Figure out how to run web scraper with no warnings being logged
 * Get FullMeet solver to return full solution instead of just printing
 * Make automated tests with pytest to compare the SingleDay and FullMeet solvers, and different ranges of the FullMeet solver
 * Make option to give current lineup when start_day isn't 1, so can solve for the remainder of a meet

@@ -136,7 +136,11 @@ class DataParser:
             filename: the pdf to extract text from
 
         """
-        reader = PdfReader(filename)
+        try:
+            reader = PdfReader(filename)
+        except FileNotFoundError:
+            msg = f"Psych sheet file '{filename}' not found. It may have been deleted. Exiting program."
+            sys.exit(msg)
 
         text = ""
         for page in reader.pages:

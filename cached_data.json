@@ -3,37 +3,183 @@
         "schedule": {
             "1": [
                 [
-                    "Men's 50m Butterfly",
-                    "Swim Off Heats"
-                ],
-                [
-                    "Men's 400m Freestyle",
+                    "Men's 1500m Freestyle",
                     "Finals"
-                ],
-                [
-                    "Women's 100m Butterfly",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 50m Butterfly",
-                    "Semifinals"
                 ],
                 [
                     "Women's 400m Freestyle",
                     "Finals"
                 ],
                 [
-                    "Men's 100m Breaststroke",
+                    "Women's 50m Butterfly",
+                    "Semifinals"
+                ],
+                [
+                    "Men's 50m Butterfly",
                     "Semifinals"
                 ],
                 [
                     "Women's 200m Individual Medley",
+                    "Finals"
+                ],
+                [
+                    "Men's 200m Individual Medley",
+                    "Finals"
+                ],
+                [
+                    "Women's 100m Backstroke",
                     "Semifinals"
+                ],
+                [
+                    "Men's 100m Backstroke",
+                    "Semifinals"
+                ],
+                [
+                    "Men's 1500m Freestyle",
+                    "Finals"
+                ],
+                [
+                    "Women's 50m Butterfly",
+                    "Swim Off Semifinals"
                 ]
             ],
             "2": [
                 [
+                    "Women's 800m Freestyle",
+                    "Finals"
+                ],
+                [
+                    "Women's 100m Backstroke",
+                    "Finals"
+                ],
+                [
+                    "Men's 100m Backstroke",
+                    "Finals"
+                ],
+                [
+                    "Women's 100m Freestyle",
+                    "Semifinals"
+                ],
+                [
+                    "Men's 100m Freestyle",
+                    "Semifinals"
+                ],
+                [
+                    "Women's 100m Breaststroke",
+                    "Semifinals"
+                ],
+                [
                     "Men's 100m Breaststroke",
+                    "Semifinals"
+                ],
+                [
+                    "Women's 50m Butterfly",
+                    "Finals"
+                ],
+                [
+                    "Men's 50m Butterfly",
+                    "Finals"
+                ],
+                [
+                    "Women's 800m Freestyle",
+                    "Finals"
+                ]
+            ],
+            "3": [
+                [
+                    "Men's 50m Backstroke",
+                    "Swim Off Heats"
+                ],
+                [
+                    "Women's 100m Freestyle",
+                    "Finals"
+                ],
+                [
+                    "Men's 100m Freestyle",
+                    "Finals"
+                ],
+                [
+                    "Women's 50m Backstroke",
+                    "Semifinals"
+                ],
+                [
+                    "Men's 50m Backstroke",
+                    "Semifinals"
+                ],
+                [
+                    "Women's 200m Butterfly",
+                    "Finals"
+                ],
+                [
+                    "Men's 200m Butterfly",
+                    "Finals"
+                ],
+                [
+                    "Women's 100m Breaststroke",
+                    "Finals"
+                ],
+                [
+                    "Men's 100m Breaststroke",
+                    "Finals"
+                ],
+                [
+                    "Women's 100m Individual Medley",
+                    "Semifinals"
+                ],
+                [
+                    "Men's 100m Individual Medley",
+                    "Semifinals"
+                ],
+                [
+                    "Men's 400m Freestyle",
+                    "Finals"
+                ]
+            ],
+            "4": [
+                [
+                    "Women's 1500m Freestyle",
+                    "Finals"
+                ],
+                [
+                    "Women's 200m Breaststroke",
+                    "Finals"
+                ],
+                [
+                    "Men's 200m Breaststroke",
+                    "Finals"
+                ],
+                [
+                    "Women's 50m Backstroke",
+                    "Finals"
+                ],
+                [
+                    "Men's 50m Backstroke",
+                    "Finals"
+                ],
+                [
+                    "Women's 100m Butterfly",
+                    "Semifinals"
+                ],
+                [
+                    "Men's 100m Butterfly",
+                    "Semifinals"
+                ],
+                [
+                    "Women's 100m Individual Medley",
+                    "Finals"
+                ],
+                [
+                    "Men's 100m Individual Medley",
+                    "Finals"
+                ],
+                [
+                    "Women's 1500m Freestyle",
+                    "Finals"
+                ]
+            ],
+            "5": [
+                [
+                    "Men's 800m Freestyle",
                     "Finals"
                 ],
                 [
@@ -41,193 +187,7 @@
                     "Finals"
                 ],
                 [
-                    "Men's 100m Backstroke",
-                    "Semifinals"
-                ],
-                [
-                    "Women's 100m Breaststroke",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 50m Butterfly",
-                    "Finals"
-                ],
-                [
-                    "Women's 100m Backstroke",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 200m Freestyle",
-                    "Semifinals"
-                ],
-                [
-                    "Women's 200m Individual Medley",
-                    "Finals"
-                ]
-            ],
-            "3": [
-                [
-                    "Men's 200m Butterfly",
-                    "Swim Off Heats"
-                ],
-                [
-                    "Men's 200m Freestyle",
-                    "Finals"
-                ],
-                [
-                    "Women's 1500m Freestyle",
-                    "Finals"
-                ],
-                [
-                    "Men's 50m Breaststroke",
-                    "Semifinals"
-                ],
-                [
-                    "Women's 100m Backstroke",
-                    "Finals"
-                ],
-                [
-                    "Men's 100m Backstroke",
-                    "Finals"
-                ],
-                [
-                    "Women's 200m Freestyle",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 200m Butterfly",
-                    "Semifinals"
-                ],
-                [
-                    "Women's 100m Breaststroke",
-                    "Finals"
-                ]
-            ],
-            "4": [
-                [
-                    "Men's 800m Freestyle",
-                    "Finals"
-                ],
-                [
-                    "Women's 200m Freestyle",
-                    "Finals"
-                ],
-                [
-                    "Men's 100m Freestyle",
-                    "Semifinals"
-                ],
-                [
-                    "Women's 50m Backstroke",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 200m Butterfly",
-                    "Finals"
-                ],
-                [
-                    "Men's 50m Breaststroke",
-                    "Finals"
-                ],
-                [
-                    "Women's 200m Butterfly",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 200m Individual Medley",
-                    "Semifinals"
-                ],
-                [
-                    "Women's 50m Backstroke",
-                    "Swim Off Semifinals"
-                ]
-            ],
-            "5": [
-                [
-                    "Women's 200m Butterfly",
-                    "Finals"
-                ],
-                [
-                    "Women's 100m Freestyle",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 100m Freestyle",
-                    "Finals"
-                ],
-                [
-                    "Women's 50m Backstroke",
-                    "Finals"
-                ],
-                [
-                    "Men's 200m Breaststroke",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 200m Individual Medley",
-                    "Finals"
-                ],
-                [
-                    "Women's 200m Breaststroke",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 200m Backstroke",
-                    "Semifinals"
-                ]
-            ],
-            "6": [
-                [
                     "Men's 100m Butterfly",
-                    "Swim Off Heats"
-                ],
-                [
-                    "Women's 100m Freestyle",
-                    "Finals"
-                ],
-                [
-                    "Men's 100m Butterfly",
-                    "Semifinals"
-                ],
-                [
-                    "Women's 200m Backstroke",
-                    "Semifinals"
-                ],
-                [
-                    "Men's 50m Freestyle",
-                    "Semifinals"
-                ],
-                [
-                    "Women's 200m Breaststroke",
-                    "Finals"
-                ],
-                [
-                    "Men's 200m Backstroke",
-                    "Finals"
-                ],
-                [
-                    "Men's 200m Breaststroke",
-                    "Finals"
-                ],
-                [
-                    "Women's 50m Butterfly",
-                    "Semifinals"
-                ],
-                [
-                    "Women's 50m Butterfly",
-                    "Swim Off Semifinals"
-                ]
-            ],
-            "7": [
-                [
-                    "Women's 50m Butterfly",
-                    "Finals"
-                ],
-                [
-                    "Men's 50m Freestyle",
-                    "Finals"
-                ],
-                [
-                    "Women's 200m Backstroke",
                     "Finals"
                 ],
                 [
@@ -235,37 +195,19 @@
                     "Semifinals"
                 ],
                 [
-                    "Men's 100m Butterfly",
-                    "Finals"
+                    "Men's 50m Breaststroke",
+                    "Semifinals"
                 ],
                 [
                     "Women's 50m Freestyle",
                     "Semifinals"
                 ],
                 [
-                    "Men's 50m Backstroke",
+                    "Men's 50m Freestyle",
                     "Semifinals"
                 ],
                 [
-                    "Women's 800m Freestyle",
-                    "Finals"
-                ]
-            ],
-            "8": [
-                [
-                    "Men's 50m Backstroke",
-                    "Finals"
-                ],
-                [
-                    "Women's 50m Breaststroke",
-                    "Finals"
-                ],
-                [
-                    "Men's 1500m Freestyle",
-                    "Finals"
-                ],
-                [
-                    "Women's 50m Freestyle",
+                    "Women's 400m Individual Medley",
                     "Finals"
                 ],
                 [
@@ -273,11 +215,45 @@
                     "Finals"
                 ],
                 [
-                    "Women's 400m Individual Medley",
+                    "Men's 800m Freestyle",
+                    "Finals"
+                ]
+            ],
+            "6": [
+                [
+                    "Women's 50m Freestyle",
+                    "Finals"
+                ],
+                [
+                    "Men's 50m Freestyle",
+                    "Finals"
+                ],
+                [
+                    "Women's 50m Breaststroke",
+                    "Finals"
+                ],
+                [
+                    "Men's 50m Breaststroke",
+                    "Finals"
+                ],
+                [
+                    "Women's 200m Backstroke",
+                    "Finals"
+                ],
+                [
+                    "Men's 200m Backstroke",
+                    "Finals"
+                ],
+                [
+                    "Women's 200m Freestyle",
+                    "Finals"
+                ],
+                [
+                    "Men's 200m Freestyle",
                     "Finals"
                 ]
             ]
         },
-        "schedule_url": "https://www.worldaquatics.com/competitions/2969/world-aquatics-championships-doha-2024/schedule?phase=All&disciplines=SW"
+        "schedule_url": "https://www.worldaquatics.com/competitions/3433/world-aquatics-swimming-championships-25m-2024/schedule?phase=All"
     }
 }
