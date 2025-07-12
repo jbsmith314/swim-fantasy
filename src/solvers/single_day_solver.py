@@ -6,9 +6,9 @@ from ortools.linear_solver import pywraplp
 
 from swimmer import Swimmer
 
-ROSTER_SIZE = 8
 BUDGET = 200
 DEBUG = False
+ROSTER_SIZE = 8
 
 class SingleDaySolver:
     """A class to solve the mixed integer program for a single day of the swim meet."""

@@ -4,8 +4,8 @@ import json
 import re
 import sys
 import time
-from pathlib import Path
 
+from pathlib import Path
 from pypdf import PdfReader
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -14,9 +14,8 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 from swimmer import Swimmer
+from utils.constants import SCHEDULE_URLS
 
-# TODO: SCHEDULE_URL needs to change for each meet
-SCHEDULE_URL = "https://www.worldaquatics.com/competitions/3433/world-aquatics-swimming-championships-25m-2024/schedule?phase=All"
 CACHE_FILE_PATH = Path(__file__).parent.parent.resolve() / "cached_data.json"
 
 class DataParser:
@@ -40,7 +39,7 @@ class DataParser:
 
         # ------------------------- Get schedule -------------------------
         # If the schedule URL matches the cached one, use the cached schedule, otherwise, fetch a new schedule
-        if data.get("schedule_data", {}).get("schedule_url", "") == SCHEDULE_URL:
+        if data.get("schedule_data", {}).get("schedule_url", "") == SCHEDULE_URLS[sys.argv[1]]:
             print("Using cached schedule.")
             # Get cached schedule
             string_keys_schedule = data.get("schedule_data", {}).get("schedule", {})
@@ -52,7 +51,7 @@ class DataParser:
             else:
                 print("No cached schedule found. Fetching new schedule.")
 
-            self.get_schedule(SCHEDULE_URL)
+            self.get_schedule(SCHEDULE_URLS[sys.argv[1]])
 
 
         # -------------------------------- Update cache file --------------------------------
@@ -60,7 +59,7 @@ class DataParser:
             schedule_data = {
                 "schedule_data": {
                     "schedule": self.schedule,
-                    "schedule_url": SCHEDULE_URL,
+                    "schedule_url": SCHEDULE_URLS[sys.argv[1]],
                 },
             }
             json.dump(schedule_data, json_file, indent=4)
@@ -91,7 +90,8 @@ class DataParser:
 
     def create_swimmers(self) -> list[Swimmer]:
         """Get a list of swimmers and their events."""
-        psych_sheet_filename = sys.argv[1]
+        psych_sheet_filename = "PsychSheets/" + sys.argv[1].lower().replace(" ", "-") + "-psych-sheet.pdf"
+
         num_days = len(self.schedule)
         lines = self._get_entries(psych_sheet_filename)
         swimmers = []

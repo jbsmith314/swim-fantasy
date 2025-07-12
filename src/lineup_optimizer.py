@@ -5,32 +5,31 @@ import sys
 from data_parser import DataParser
 from solvers.full_meet_solver import FullMeetSolver
 from solvers.single_day_solver import SingleDaySolver
+from utils.constants import (
+    NUM_DAYS,
+    NUM_EXPECTED_ARGS,
+    NUM_LINEUPS,
+    SCHEDULE_URLS,
+    SWITCHES,
+)
 
-NUM_EXPECTED_ARGS = 2 # Expected number of command line arguments
-DAY = 5 # Day for the single day solver to solve for
-NUM_DAYS = 6 # Number of days in the meet
-NUM_LINEUPS = 1 # Number of lineups to generate for the single day solver
 
-CREDITS = 800
-ADDITIONAL_CREDITS = 150
-SWITCH_COST = 1
-SWITCHES = (CREDITS + ADDITIONAL_CREDITS) // SWITCH_COST
-
-def check_valid_input() -> bool:
+def check_valid_input() -> None:
     """Check valid command line input to run the program."""
     if len(sys.argv) != NUM_EXPECTED_ARGS:
-        sys.exit(f"This program takes two additional arguments.\nExample input: uv run .\\src\\{__file__} .\\PsychSheets\\2024-scm-worlds-psych-sheet.pdf")
+        sys.exit(f'This program takes two additional arguments.\nExample input: uv run .\\src\\{__file__} "2024 SCM Worlds"')
 
-    psych_sheet = sys.argv[1]
-    if psych_sheet[-4:] != ".pdf":
-        sys.exit(f"Psych sheet file must be a PDF.\nExample input: uv run .\\src\\{__file__} .\\PsychSheets\\2024-scm-worlds-psych-sheet.pdf")
-
-    return True
+    if sys.argv[1] not in SCHEDULE_URLS:
+        print("Meet not recognized. Please use one of the following:")
+        for url in SCHEDULE_URLS:
+            print(url)
+        sys.exit()
 
 
 def test_single_day_solver(parser: DataParser) -> None:
     """Test the single day solver."""
-    for day in range(6):
+    print(len(parser.schedule))
+    for day in range(len(parser.schedule)):
         solver = SingleDaySolver(parser.swimmers, day + 1)
 
         # number larger than any possible score
@@ -69,7 +68,8 @@ def main() -> None:
     parser.update_projected_points()
 
     # Takes majority of time
-    test_full_meet_solver(parser)
+    # test_full_meet_solver(parser)
+    test_single_day_solver(parser)
 
 if __name__ == "__main__":
     main()

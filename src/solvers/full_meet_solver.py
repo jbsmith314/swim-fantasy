@@ -7,8 +7,8 @@ from ortools.linear_solver import pywraplp
 
 from swimmer import Swimmer
 
-ROSTER_SIZE = 8
 BUDGET = 200
+ROSTER_SIZE = 8
 
 class FullMeetSolver:
     """A class to solve the mixed integer program for the full swim meet."""

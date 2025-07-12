@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
+import sys
 
 from entry import Entry
 from wr_scraper import get_base_times_from_db
@@ -108,7 +109,7 @@ class Swimmer:
             data = json.load(json_file)
 
         # TODO: Make this not have hard coded year and course, and not have to fetch every time (@lrucache?)
-        base_times = get_base_times_from_db(2024, "SCM")
+        base_times = get_base_times_from_db(int(sys.argv[1].split()[0]), sys.argv[1].split()[1])
         string_keys_schedule = data.get("schedule_data", {}).get("schedule", {})
         schedule = {int(k): v for k, v in string_keys_schedule.items()}
 
