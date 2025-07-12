@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 import math
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from entry import Entry
 from wr_scraper import get_base_times_from_db

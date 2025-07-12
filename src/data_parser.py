@@ -4,8 +4,8 @@ import json
 import re
 import sys
 import time
-
 from pathlib import Path
+
 from pypdf import PdfReader
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
